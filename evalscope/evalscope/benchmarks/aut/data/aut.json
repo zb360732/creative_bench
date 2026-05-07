@@ -1,0 +1,367 @@
+[
+  {
+    "query": "What are some creative uses for a artist?\nList as many creative and alternative uses as you can think of for a artist. Each use should be a brief phrase or sentence.",
+    "item": "artist",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a baby?\nList as many creative and alternative uses as you can think of for a baby. Each use should be a brief phrase or sentence.",
+    "item": "baby",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a belt?\nList as many creative and alternative uses as you can think of for a belt. Each use should be a brief phrase or sentence.",
+    "item": "belt",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a blade?\nList as many creative and alternative uses as you can think of for a blade. Each use should be a brief phrase or sentence.",
+    "item": "blade",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a boot?\nList as many creative and alternative uses as you can think of for a boot. Each use should be a brief phrase or sentence.",
+    "item": "boot",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a bowl?\nList as many creative and alternative uses as you can think of for a bowl. Each use should be a brief phrase or sentence.",
+    "item": "bowl",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a box?\nList as many creative and alternative uses as you can think of for a box. Each use should be a brief phrase or sentence.",
+    "item": "box",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a brick?\nList as many creative and alternative uses as you can think of for a brick. Each use should be a brief phrase or sentence.",
+    "item": "brick",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a bucket?\nList as many creative and alternative uses as you can think of for a bucket. Each use should be a brief phrase or sentence.",
+    "item": "bucket",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a bureau?\nList as many creative and alternative uses as you can think of for a bureau. Each use should be a brief phrase or sentence.",
+    "item": "bureau",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a cafe?\nList as many creative and alternative uses as you can think of for a cafe. Each use should be a brief phrase or sentence.",
+    "item": "cafe",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a candle?\nList as many creative and alternative uses as you can think of for a candle. Each use should be a brief phrase or sentence.",
+    "item": "candle",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a cannon?\nList as many creative and alternative uses as you can think of for a cannon. Each use should be a brief phrase or sentence.",
+    "item": "cannon",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a canoe?\nList as many creative and alternative uses as you can think of for a canoe. Each use should be a brief phrase or sentence.",
+    "item": "canoe",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a cart?\nList as many creative and alternative uses as you can think of for a cart. Each use should be a brief phrase or sentence.",
+    "item": "cart",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a chamber?\nList as many creative and alternative uses as you can think of for a chamber. Each use should be a brief phrase or sentence.",
+    "item": "chamber",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a church?\nList as many creative and alternative uses as you can think of for a church. Each use should be a brief phrase or sentence.",
+    "item": "church",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a clay?\nList as many creative and alternative uses as you can think of for a clay. Each use should be a brief phrase or sentence.",
+    "item": "clay",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a couch?\nList as many creative and alternative uses as you can think of for a couch. Each use should be a brief phrase or sentence.",
+    "item": "couch",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a death?\nList as many creative and alternative uses as you can think of for a death. Each use should be a brief phrase or sentence.",
+    "item": "death",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a debt?\nList as many creative and alternative uses as you can think of for a debt. Each use should be a brief phrase or sentence.",
+    "item": "debt",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a dish?\nList as many creative and alternative uses as you can think of for a dish. Each use should be a brief phrase or sentence.",
+    "item": "dish",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a drug?\nList as many creative and alternative uses as you can think of for a drug. Each use should be a brief phrase or sentence.",
+    "item": "drug",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a drum?\nList as many creative and alternative uses as you can think of for a drum. Each use should be a brief phrase or sentence.",
+    "item": "drum",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a duty?\nList as many creative and alternative uses as you can think of for a duty. Each use should be a brief phrase or sentence.",
+    "item": "duty",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a expert?\nList as many creative and alternative uses as you can think of for a expert. Each use should be a brief phrase or sentence.",
+    "item": "expert",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a feet?\nList as many creative and alternative uses as you can think of for a feet. Each use should be a brief phrase or sentence.",
+    "item": "feet",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a finger?\nList as many creative and alternative uses as you can think of for a finger. Each use should be a brief phrase or sentence.",
+    "item": "finger",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a fist?\nList as many creative and alternative uses as you can think of for a fist. Each use should be a brief phrase or sentence.",
+    "item": "fist",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a glass?\nList as many creative and alternative uses as you can think of for a glass. Each use should be a brief phrase or sentence.",
+    "item": "glass",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a golf?\nList as many creative and alternative uses as you can think of for a golf. Each use should be a brief phrase or sentence.",
+    "item": "golf",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a grass?\nList as many creative and alternative uses as you can think of for a grass. Each use should be a brief phrase or sentence.",
+    "item": "grass",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a hair?\nList as many creative and alternative uses as you can think of for a hair. Each use should be a brief phrase or sentence.",
+    "item": "hair",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a hole?\nList as many creative and alternative uses as you can think of for a hole. Each use should be a brief phrase or sentence.",
+    "item": "hole",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a home?\nList as many creative and alternative uses as you can think of for a home. Each use should be a brief phrase or sentence.",
+    "item": "home",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a hood?\nList as many creative and alternative uses as you can think of for a hood. Each use should be a brief phrase or sentence.",
+    "item": "hood",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a horn?\nList as many creative and alternative uses as you can think of for a horn. Each use should be a brief phrase or sentence.",
+    "item": "horn",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a house?\nList as many creative and alternative uses as you can think of for a house. Each use should be a brief phrase or sentence.",
+    "item": "house",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a infant?\nList as many creative and alternative uses as you can think of for a infant. Each use should be a brief phrase or sentence.",
+    "item": "infant",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a key?\nList as many creative and alternative uses as you can think of for a key. Each use should be a brief phrase or sentence.",
+    "item": "key",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a knife?\nList as many creative and alternative uses as you can think of for a knife. Each use should be a brief phrase or sentence.",
+    "item": "knife",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a lamp?\nList as many creative and alternative uses as you can think of for a lamp. Each use should be a brief phrase or sentence.",
+    "item": "lamp",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a law?\nList as many creative and alternative uses as you can think of for a law. Each use should be a brief phrase or sentence.",
+    "item": "law",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a letter?\nList as many creative and alternative uses as you can think of for a letter. Each use should be a brief phrase or sentence.",
+    "item": "letter",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a manual?\nList as many creative and alternative uses as you can think of for a manual. Each use should be a brief phrase or sentence.",
+    "item": "manual",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a money?\nList as many creative and alternative uses as you can think of for a money. Each use should be a brief phrase or sentence.",
+    "item": "money",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a muscle?\nList as many creative and alternative uses as you can think of for a muscle. Each use should be a brief phrase or sentence.",
+    "item": "muscle",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a music?\nList as many creative and alternative uses as you can think of for a music. Each use should be a brief phrase or sentence.",
+    "item": "music",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a note?\nList as many creative and alternative uses as you can think of for a note. Each use should be a brief phrase or sentence.",
+    "item": "note",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a oath?\nList as many creative and alternative uses as you can think of for a oath. Each use should be a brief phrase or sentence.",
+    "item": "oath",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a office?\nList as many creative and alternative uses as you can think of for a office. Each use should be a brief phrase or sentence.",
+    "item": "office",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a oven?\nList as many creative and alternative uses as you can think of for a oven. Each use should be a brief phrase or sentence.",
+    "item": "oven",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a pan?\nList as many creative and alternative uses as you can think of for a pan. Each use should be a brief phrase or sentence.",
+    "item": "pan",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a paper?\nList as many creative and alternative uses as you can think of for a paper. Each use should be a brief phrase or sentence.",
+    "item": "paper",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a paperclip?\nList as many creative and alternative uses as you can think of for a paperclip. Each use should be a brief phrase or sentence.",
+    "item": "paperclip",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a phone?\nList as many creative and alternative uses as you can think of for a phone. Each use should be a brief phrase or sentence.",
+    "item": "phone",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a pill?\nList as many creative and alternative uses as you can think of for a pill. Each use should be a brief phrase or sentence.",
+    "item": "pill",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a pillow?\nList as many creative and alternative uses as you can think of for a pillow. Each use should be a brief phrase or sentence.",
+    "item": "pillow",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a ring?\nList as many creative and alternative uses as you can think of for a ring. Each use should be a brief phrase or sentence.",
+    "item": "ring",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a rock?\nList as many creative and alternative uses as you can think of for a rock. Each use should be a brief phrase or sentence.",
+    "item": "rock",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a rope?\nList as many creative and alternative uses as you can think of for a rope. Each use should be a brief phrase or sentence.",
+    "item": "rope",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a ship?\nList as many creative and alternative uses as you can think of for a ship. Each use should be a brief phrase or sentence.",
+    "item": "ship",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a shoe?\nList as many creative and alternative uses as you can think of for a shoe. Each use should be a brief phrase or sentence.",
+    "item": "shoe",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a shovel?\nList as many creative and alternative uses as you can think of for a shovel. Each use should be a brief phrase or sentence.",
+    "item": "shovel",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a snow?\nList as many creative and alternative uses as you can think of for a snow. Each use should be a brief phrase or sentence.",
+    "item": "snow",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a soap?\nList as many creative and alternative uses as you can think of for a soap. Each use should be a brief phrase or sentence.",
+    "item": "soap",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a sofa?\nList as many creative and alternative uses as you can think of for a sofa. Each use should be a brief phrase or sentence.",
+    "item": "sofa",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a soup?\nList as many creative and alternative uses as you can think of for a soup. Each use should be a brief phrase or sentence.",
+    "item": "soup",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a street?\nList as many creative and alternative uses as you can think of for a street. Each use should be a brief phrase or sentence.",
+    "item": "street",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a taxi?\nList as many creative and alternative uses as you can think of for a taxi. Each use should be a brief phrase or sentence.",
+    "item": "taxi",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a tongue?\nList as many creative and alternative uses as you can think of for a tongue. Each use should be a brief phrase or sentence.",
+    "item": "tongue",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a tree?\nList as many creative and alternative uses as you can think of for a tree. Each use should be a brief phrase or sentence.",
+    "item": "tree",
+    "category": "AUT"
+  },
+  {
+    "query": "What are some creative uses for a tune?\nList as many creative and alternative uses as you can think of for a tune. Each use should be a brief phrase or sentence.",
+    "item": "tune",
+    "category": "AUT"
+  }
+]

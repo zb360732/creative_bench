@@ -1,0 +1,83 @@
+{
+  "suites": {
+    "combination": {
+      "description": "Combination-level creativity tasks.",
+      "datasets": ["dat", "bats", "rat", "metaphor"],
+      "work_dir": "benchmark/outputs/combination",
+      "run_name_prefix": "combination_full",
+      "max_tokens": 30000,
+      "temperature": 0.0,
+      "eval_batch_size": 4,
+      "judge_worker_num": 4,
+      "max_parallel": 4,
+      "dataset_args": {}
+    },
+    "exploration": {
+      "description": "Exploration-level creativity tasks.",
+      "datasets": ["aut", "creative_math", "drivel_writing", "neocoder"],
+      "work_dir": "benchmark/outputs/exploration",
+      "run_name_prefix": "exploration_full",
+      "max_tokens": 30000,
+      "temperature": 0.0,
+      "eval_batch_size": 1,
+      "judge_worker_num": 1,
+      "max_parallel": 5,
+      "dataset_args": {
+        "creative_math": {
+          "extra_params": {
+            "evaluation_mode": "full"
+          }
+        }
+      }
+    },
+    "transformation": {
+      "description": "Transformation-level creativity tasks.",
+      "datasets": ["transformation"],
+      "work_dir": "benchmark/outputs/transformation",
+      "run_name_prefix": "transformation_full",
+      "max_tokens": 30000,
+      "temperature": 0.7,
+      "eval_batch_size": 4,
+      "judge_worker_num": 4,
+      "max_parallel": 4,
+      "dataset_args": {
+        "transformation": {
+          "extra_params": {
+            "evaluation_mode": "llm_judge",
+            "judge_max_tokens": 4096
+          }
+        }
+      }
+    },
+    "fulltask": {
+      "description": "Full creative benchmark across all current levels.",
+      "datasets": ["dat", "bats", "rat", "metaphor", "aut", "creative_math", "cs4", "drivel_writing", "neocoder", "transformation"],
+      "work_dir": "benchmark/outputs/fulltask",
+      "run_name_prefix": "fulltask_fullmodels",
+      "max_tokens": 30000,
+      "temperature": 0.0,
+      "eval_batch_size": 16,
+      "judge_worker_num": 16,
+      "max_parallel": 5,
+      "dataset_args": {
+        "creative_math": {
+          "extra_params": {
+            "evaluation_mode": "full"
+          }
+        },
+        "cs4": {
+          "extra_params": {
+            "evaluation_mode": "full",
+            "judge_max_tokens": 8192
+          }
+        },
+        "transformation": {
+          "extra_params": {
+            "evaluation_mode": "llm_judge",
+            "judge_max_tokens": 4096
+          }
+        }
+      }
+    }
+  }
+}

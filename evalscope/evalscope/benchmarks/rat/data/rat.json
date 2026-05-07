@@ -1,0 +1,866 @@
+[
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cottage/swiss/cake\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cottage/swiss/cake",
+    "answer": "cheese",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cream/skate/water\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cream/skate/water",
+    "answer": "ice",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: loser/throat/spot\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "loser/throat/spot",
+    "answer": "sore",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: show/life/row\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "show/life/row",
+    "answer": "boat",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: night/wrist/stop\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "night/wrist/stop",
+    "answer": "watch",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: duck/fold/dollar\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "duck/fold/dollar",
+    "answer": "bill",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: rocking/wheel/high\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "rocking/wheel/high",
+    "answer": "chair",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: dew/comb/bee\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "dew/comb/bee",
+    "answer": "honey",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fountain/baking/pop\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fountain/baking/pop",
+    "answer": "soda",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: preserve/ranger/tropical\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "preserve/ranger/tropical",
+    "answer": "forest",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: aid/rubber/wagon\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "aid/rubber/wagon",
+    "answer": "band",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: flake/mobile/cone\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "flake/mobile/cone",
+    "answer": "snow",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cracker/fly/fighter\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cracker/fly/fighter",
+    "answer": "fire",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: safety/cushion/point\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "safety/cushion/point",
+    "answer": "pin",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cane/daddy/plum\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cane/daddy/plum",
+    "answer": "sugar",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: dream/break/light\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "dream/break/light",
+    "answer": "day",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fish/mine/rush\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fish/mine/rush",
+    "answer": "gold",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: political/surprise/line\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "political/surprise/line",
+    "answer": "party",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: measure/worm/video\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "measure/worm/video",
+    "answer": "tape",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: high/district/house\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "high/district/house",
+    "answer": "school",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: sense/courtesy/place\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "sense/courtesy/place",
+    "answer": "common",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: worm/shelf/end\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "worm/shelf/end",
+    "answer": "book",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: piece/mind/dating\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "piece/mind/dating",
+    "answer": "game",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: flower/friend/scout\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "flower/friend/scout",
+    "answer": "girl",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: river/note/account\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "river/note/account",
+    "answer": "bank",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: print/berry/bird\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "print/berry/bird",
+    "answer": "blue",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pie/luck/belly\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pie/luck/belly",
+    "answer": "pot",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: date/alley/fold\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "date/alley/fold",
+    "answer": "blind",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: opera/hand/dish\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "opera/hand/dish",
+    "answer": "soap",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cadet/capsule/ship\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cadet/capsule/ship",
+    "answer": "space",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fur/rack/tail\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fur/rack/tail",
+    "answer": "coat",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: stick/maker/point\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "stick/maker/point",
+    "answer": "match",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: hound/pressure/shot\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "hound/pressure/shot",
+    "answer": "blood",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fox/man/peep\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fox/man/peep",
+    "answer": "hole",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: sleeping/bean/trash\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "sleeping/bean/trash",
+    "answer": "bag",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: dust/cereal/fish\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "dust/cereal/fish",
+    "answer": "bowl",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: light/birthday/stick\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "light/birthday/stick",
+    "answer": "candle",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: food/forward/break\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "food/forward/break",
+    "answer": "fast",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: shine/beam/struck\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "shine/beam/struck",
+    "answer": "moon",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: peach/arm/tar\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "peach/arm/tar",
+    "answer": "pit",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: water/mine/shaker\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "water/mine/shaker",
+    "answer": "salt",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: palm/shoe/house\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "palm/shoe/house",
+    "answer": "tree",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: basket/eight/snow\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "basket/eight/snow",
+    "answer": "ball",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: wheel/hand/shopping\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "wheel/hand/shopping",
+    "answer": "cart",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: right/cat/carbon\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "right/cat/carbon",
+    "answer": "copy",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: home/sea/bed\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "home/sea/bed",
+    "answer": "sick",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: nuclear/feud/album\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "nuclear/feud/album",
+    "answer": "family",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: sandwich/house/golf\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "sandwich/house/golf",
+    "answer": "club",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cross/rain/tie\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cross/rain/tie",
+    "answer": "bow",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: sage/paint/hair\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "sage/paint/hair",
+    "answer": "brush",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: french/car/shoe\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "french/car/shoe",
+    "answer": "horn",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: boot/summer/ground\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "boot/summer/ground",
+    "answer": "camp",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: chamber/mask/natural\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "chamber/mask/natural",
+    "answer": "gas",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: mill/tooth/dust\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "mill/tooth/dust",
+    "answer": "saw",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: main/sweeper/light\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "main/sweeper/light",
+    "answer": "street",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pike/coat/signal\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pike/coat/signal",
+    "answer": "turn",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: office/mail/hat\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "office/mail/hat",
+    "answer": "box",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fly/clip/wall\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fly/clip/wall",
+    "answer": "paper",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: age/mile/sand\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "age/mile/sand",
+    "answer": "stone",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: catcher/food/hot\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "catcher/food/hot",
+    "answer": "dog",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: wagon/break/radio\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "wagon/break/radio",
+    "answer": "station",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: tank/hill/secret\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "tank/hill/secret",
+    "answer": "top",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: health/taker/less\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "health/taker/less",
+    "answer": "care",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: lift/card/mask\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "lift/card/mask",
+    "answer": "face",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: dress/dial/flower\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "dress/dial/flower",
+    "answer": "sun",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: force/line/mail\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "force/line/mail",
+    "answer": "air",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: guy/rain/down\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "guy/rain/down",
+    "answer": "fall",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: eight/skate/stick\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "eight/skate/stick",
+    "answer": "figure",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: down/question/check\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "down/question/check",
+    "answer": "mark",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: animal/back/rat\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "animal/back/rat",
+    "answer": "pack",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: officer/cash/larceny\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "officer/cash/larceny",
+    "answer": "petty",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pine/crab/sauce\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pine/crab/sauce",
+    "answer": "apple",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: house/thumb/pepper\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "house/thumb/pepper",
+    "answer": "green",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: carpet/alert/ink\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "carpet/alert/ink",
+    "answer": "red",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: master/toss/finger\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "master/toss/finger",
+    "answer": "ring",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: hammer/gear/hunter\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "hammer/gear/hunter",
+    "answer": "head",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: knife/light/pal\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "knife/light/pal",
+    "answer": "pen",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: foul/ground/mate\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "foul/ground/mate",
+    "answer": "play",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: change/circuit/cake\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "change/circuit/cake",
+    "answer": "short",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: way/board/sleep\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "way/board/sleep",
+    "answer": "walk",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: blank/list/mate\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "blank/list/mate",
+    "answer": "check",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: tail/water/flood\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "tail/water/flood",
+    "answer": "gate",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: marshal/child/piano\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "marshal/child/piano",
+    "answer": "grand",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cover/arm/wear\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cover/arm/wear",
+    "answer": "under",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: rain/test/stomach\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "rain/test/stomach",
+    "answer": "acid",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: time/blown/nelson\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "time/blown/nelson",
+    "answer": "full",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pile/market/room\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pile/market/room",
+    "answer": "stock",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: mouse/bear/sand\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "mouse/bear/sand",
+    "answer": "trap",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cat/number/phone\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cat/number/phone",
+    "answer": "call",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: keg/puff/room\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "keg/puff/room",
+    "answer": "powder",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: trip/house/goal\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "trip/house/goal",
+    "answer": "field",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fork/dark/man\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fork/dark/man",
+    "answer": "pitch",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fence/card/master\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fence/card/master",
+    "answer": "post",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: test/runner/map\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "test/runner/map",
+    "answer": "road",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: dive/light/rocket\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "dive/light/rocket",
+    "answer": "sky",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: man/glue/star\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "man/glue/star",
+    "answer": "super",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: tooth/potato/heart\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "tooth/potato/heart",
+    "answer": "sweet",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: illness/bus/computer\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "illness/bus/computer",
+    "answer": "terminal",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: type/ghost/screen\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "type/ghost/screen",
+    "answer": "writer",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: mail/board/lung\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "mail/board/lung",
+    "answer": "black",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: teeth/arrest/start\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "teeth/arrest/start",
+    "answer": "FALSE",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: iron/shovel/engine\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "iron/shovel/engine",
+    "answer": "steam",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: wet/law/business\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "wet/law/business",
+    "answer": "suit",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: rope/truck/line\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "rope/truck/line",
+    "answer": "tow",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: off/military/first\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "off/military/first",
+    "answer": "base",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: spoon/cloth/card\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "spoon/cloth/card",
+    "answer": "table",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cut/cream/war\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cut/cream/war",
+    "answer": "cold",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: note/chain/master\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "note/chain/master",
+    "answer": "key",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: shock/shave/taste\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "shock/shave/taste",
+    "answer": "after",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: wise/work/tower\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "wise/work/tower",
+    "answer": "clock",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: grass/king/meat\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "grass/king/meat",
+    "answer": "crab",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: baby/spring/cap\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "baby/spring/cap",
+    "answer": "shower",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: break/bean/cake\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "break/bean/cake",
+    "answer": "coffee",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cry/front/ship\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cry/front/ship",
+    "answer": "battle",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: hold/print/stool\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "hold/print/stool",
+    "answer": "foot",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: roll/bean/fish\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "roll/bean/fish",
+    "answer": "jelly",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: horse/human/drag\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "horse/human/drag",
+    "answer": "race",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: oil/bar/tuna\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "oil/bar/tuna",
+    "answer": "salad",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: bottom/curve/hop\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "bottom/curve/hop",
+    "answer": "bell",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: tomato/bomb/picker\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "tomato/bomb/picker",
+    "answer": "cherry",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pea/shell/chest\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pea/shell/chest",
+    "answer": "nut",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: line/fruit/drunk\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "line/fruit/drunk",
+    "answer": "punch",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: bump/egg/step\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "bump/egg/step",
+    "answer": "goose",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: fight/control/machine\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "fight/control/machine",
+    "answer": "gun",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: home/arm/room\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "home/arm/room",
+    "answer": "rest",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: child/scan/wash\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "child/scan/wash",
+    "answer": "brain",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: nose/stone/bear\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "nose/stone/bear",
+    "answer": "brown",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: end/line/lock\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "end/line/lock",
+    "answer": "dead",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: control/place/rate\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "control/place/rate",
+    "answer": "birth",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: lounge/hour/napkin\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "lounge/hour/napkin",
+    "answer": "cocktail",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: artist/hatch/route\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "artist/hatch/route",
+    "answer": "escape",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: pet/bottom/garden\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "pet/bottom/garden",
+    "answer": "rock",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: mate/shoes/total\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "mate/shoes/total",
+    "answer": "running",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: self/attorney/spending\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "self/attorney/spending",
+    "answer": "defense",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: board/blade/back\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "board/blade/back",
+    "answer": "switch",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: land/hand/house\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "land/hand/house",
+    "answer": "farm",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: hungry/order/belt\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "hungry/order/belt",
+    "answer": "money",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: forward/flush/razor\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "forward/flush/razor",
+    "answer": "straight",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: shadow/chart/drop\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "shadow/chart/drop",
+    "answer": "eye",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: way/ground/weather\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "way/ground/weather",
+    "answer": "fair",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: cast/side/jump\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "cast/side/jump",
+    "answer": "broad",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: back/step/screen\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "back/step/screen",
+    "answer": "door",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: reading/service/stick\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "reading/service/stick",
+    "answer": "lip",
+    "category": "RAT"
+  },
+  {
+    "query": "Find a single word that connects with all three words to form common compound words or phrases.\n\nWords: over/plant/horse\n\nFor example, the word \"cheese\" connects with \"cottage/swiss/cake\" to form:\n- cottage cheese\n- swiss cheese\n- cheese cake\n\nProvide a single word that can meaningfully combine with each of the three words above.",
+    "question": "over/plant/horse",
+    "answer": "power",
+    "category": "RAT"
+  }
+]

@@ -1,0 +1,231 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from triskill import TriSkillEnhancer, build_artifact, enhance_prompt, normalize_selected, profile_task
+from triskill.analysis import write_summary
+from triskill.dataset import enhance_dataset_file
+from triskill.diagnostics import diagnose_transformation
+from triskill.evalscope_bridge import artifacts_to_predictions
+from triskill.execution_hooks import verify_math_solution, verify_python_code
+from triskill.executor import run_triskill
+from triskill.llm import parse_json_lenient
+from triskill.paper_pipeline import audit_artifacts, create_experiment_manifest, join_scores, write_scored_summary
+from triskill.runner import run_dataset
+
+
+class TriSkillTest(unittest.TestCase):
+    def test_rat_profile_selects_combinational_bridge_skills(self):
+        profile = profile_task("rat")
+        enhancer = TriSkillEnhancer(profile)
+        plan = enhancer.plan()
+
+        self.assertEqual(plan["creativity_level"], "combinational")
+        self.assertIn("associative_bridge", plan["canonical_metrics"])
+        self.assertIn("bridge_search", plan["skills"])
+        self.assertIn("relation_verification", plan["skills"])
+        self.assertNotIn("metaphorical_property_mapping", plan["skills"])
+
+    def test_aut_profile_selects_exploratory_skills(self):
+        profile = profile_task("aut")
+        enhancer = TriSkillEnhancer(profile)
+        plan = enhancer.plan()
+
+        self.assertEqual(plan["creativity_level"], "exploratory")
+        self.assertIn("novelty", plan["canonical_metrics"])
+        self.assertIn("candidate_multiplication", plan["skills"])
+        self.assertIn("appropriateness_check", plan["skills"])
+        self.assertEqual(plan["skills"][-1], "output_normalization")
+
+    def test_enhanced_prompt_preserves_answer_schema(self):
+        prompt = "Find a single word for cottage/swiss/cake."
+        enhanced = enhance_prompt(prompt, "rat")
+
+        self.assertIn(prompt, enhanced)
+        self.assertIn('<answer>{"word": "connecting_word"}</answer>', enhanced)
+        self.assertIn("Do not use hidden gold answers", enhanced)
+        self.assertIn("do not reveal", enhanced.lower())
+
+    def test_transformation_profile_uses_reconstruction_skills(self):
+        profile = profile_task("transformational_creativity")
+        plan = TriSkillEnhancer(profile).plan()
+
+        self.assertEqual(plan["task_name"], "transformation")
+        self.assertEqual(plan["creativity_level"], "transformational")
+        self.assertIn("architecture_reconstruction", plan["skills"])
+        self.assertIn("old_world_residue_audit", plan["skills"])
+
+    def test_profile_contains_budgets_and_output_normalization(self):
+        plan = TriSkillEnhancer(profile_task("dat")).plan()
+
+        self.assertEqual(plan["budgets"]["final_count"], 10)
+        self.assertIn("output_normalization", plan["skills"])
+        self.assertEqual(plan["canonical_metric_weights"]["semantic_diversity"], "high")
+
+    def test_build_artifact_excludes_gold_fields(self):
+        item = {
+            "query": "Find a single word for cottage/swiss/cake.",
+            "question": "cottage/swiss/cake",
+            "answer": "cheese",
+            "candidate_answers": ["cheese"],
+            "category": "RAT",
+        }
+        artifact = build_artifact("rat", item)
+
+        self.assertNotIn("answer", artifact["safe_item"])
+        self.assertNotIn("candidate_answers", artifact["safe_item"])
+        self.assertIn("excluded scoring-only fields", artifact["warnings"][0])
+        self.assertIn("TriSkill creativity elicitation instructions", artifact["enhanced_prompt"])
+
+    def test_normalize_selected_outputs_answer_block(self):
+        output = normalize_selected("rat", {"word": "cheese"})
+
+        self.assertIn("<answer>", output)
+        self.assertIn('"word": "cheese"', output)
+
+    def test_dataset_file_enhancement_writes_jsonl(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            input_path = Path(tmp) / "rat.json"
+            output_path = Path(tmp) / "enhanced.jsonl"
+            input_path.write_text(
+                json.dumps([
+                    {"query": "Find a single word for cottage/swiss/cake.", "answer": "cheese", "category": "RAT"}
+                ]),
+                encoding="utf-8",
+            )
+
+            rows = enhance_dataset_file("rat", input_path, output_path)
+
+            self.assertEqual(len(rows), 1)
+            self.assertTrue(output_path.exists())
+            payload = json.loads(output_path.read_text(encoding="utf-8").strip())
+            self.assertIn("enhanced_prompt", payload)
+            self.assertNotIn("answer", payload["safe_item"])
+
+    def test_lenient_json_parser_handles_answer_block(self):
+        parsed = parse_json_lenient('<answer>\n{"word":"cheese",}\n</answer>')
+
+        self.assertEqual(parsed, {"word": "cheese"})
+
+    def test_full_executor_with_fake_llm(self):
+        item = {"query": "Find a single word for cottage/swiss/cake.", "answer": "cheese", "category": "RAT"}
+        artifact = run_triskill("rat", item, llm=FakeLLM(), method="triskill_full")
+
+        self.assertIn("<answer>", artifact["final_answer"])
+        self.assertIn('"word": "cheese"', artifact["final_answer"])
+        self.assertGreaterEqual(artifact["num_llm_calls"], 3)
+        self.assertNotIn("answer", artifact["safe_item"])
+
+    def test_full_executor_normalizes_rationale_fallback(self):
+        item = {"query": "Find a single word for cottage/swiss/cake.", "answer": "cheese", "category": "RAT"}
+        artifact = run_triskill("rat", item, llm=RationaleFallbackLLM(), method="triskill_full")
+
+        self.assertIn("<answer>", artifact["final_answer"])
+        self.assertIn('"word": "cheese"', artifact["final_answer"])
+        self.assertNotIn("thinking step by step", artifact["final_answer"])
+
+    def test_runner_prompt_only_and_without_verifier(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            input_path = Path(tmp) / "rat.json"
+            output_path = Path(tmp) / "run.jsonl"
+            input_path.write_text(json.dumps([{"query": "Find a word.", "answer": "x"}]), encoding="utf-8")
+
+            rows = run_dataset("rat", str(input_path), str(output_path), method="triskill_without_verifier", llm=FakeLLM())
+
+            self.assertEqual(len(rows), 1)
+            self.assertNotIn("relation_verification", rows[0]["skills"])
+            self.assertIn("output_normalization", rows[0]["skills"])
+
+    def test_analysis_and_prediction_bridge(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact_path = Path(tmp) / "artifacts.jsonl"
+            summary_path = Path(tmp) / "summary.json"
+            pred_path = Path(tmp) / "predictions.json"
+            row = {
+                "task_name": "rat",
+                "method": "triskill_full",
+                "level": "combinational",
+                "item_id": "1",
+                "final_answer": '<answer>{"word":"cheese"}</answer>',
+                "parse_success": True,
+                "output_length": 1,
+                "num_llm_calls": 4,
+            }
+            artifact_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+            summary = write_summary([artifact_path], summary_path)
+            predictions = artifacts_to_predictions(artifact_path, pred_path)
+
+            self.assertEqual(summary["num_rows"], 1)
+            self.assertEqual(predictions[0]["prediction"], '<answer>{"word":"cheese"}</answer>')
+
+    def test_transformation_diagnostics(self):
+        diag = diagnose_transformation("We will patch the existing system and keep the old process.")
+
+        self.assertIn("local_patching", diag["active_failure_modes"])
+        self.assertGreater(diag["num_active_failure_modes"], 0)
+
+    def test_execution_hooks_are_conservative(self):
+        ok = verify_python_code("print('hi')", expected_stdout="hi")
+        unchecked = verify_python_code("def solve():\n    pass")
+        math = verify_math_solution("A proof sketch")
+
+        self.assertTrue(ok["execution_pass"])
+        self.assertIsNone(unchecked["execution_pass"])
+        self.assertIsNone(math["execution_pass"])
+
+    def test_paper_pipeline_manifest_audit_and_scores(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = Path(tmp) / "manifest.jsonl"
+            artifact = Path(tmp) / "artifact.jsonl"
+            scores = Path(tmp) / "scores.jsonl"
+            joined = Path(tmp) / "joined.jsonl"
+            summary = Path(tmp) / "scored_summary.json"
+
+            manifest_rows = create_experiment_manifest(manifest, tasks={"rat": "rat.json"}, methods=("direct", "triskill_full"), limit=3)
+            artifact.write_text(
+                json.dumps({
+                    "task_name": "rat",
+                    "method": "direct",
+                    "safe_item": {"query": "q"},
+                    "original_prompt": "q",
+                    "enhanced_prompt": "q",
+                    "final_answer": "a",
+                    "parse_success": True,
+                    "output_length": 1,
+                    "num_llm_calls": 1,
+                    "warnings": [],
+                }) + "\n",
+                encoding="utf-8",
+            )
+            scores.write_text(json.dumps({"id": 0, "score": 0.5}) + "\n", encoding="utf-8")
+
+            audit = audit_artifacts(artifact)
+            joined_rows = join_scores(artifact, scores, joined)
+            scored = write_scored_summary([joined], summary)
+
+            self.assertEqual(len(manifest_rows), 2)
+            self.assertTrue(audit["pass"])
+            self.assertEqual(joined_rows[0]["scores"]["score"], 0.5)
+            self.assertEqual(scored["task_method"][0]["mean_score"], 0.5)
+
+
+class FakeLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        if "output_normalization" in prompt.lower():
+            return '<answer>{"word":"cheese"}</answer>'
+        if "scored_candidates" in prompt or "relation_verification" in prompt:
+            return '{"scored_candidates":[{"candidate":"cheese","score":3,"valid":true}],"best_candidate":"cheese"}'
+        return '{"candidates":[{"word":"cheese","connections":[{"clue":"cottage","connection":"cottage cheese"}],"all_three_fit":true}],"best_candidate":"cheese"}'
+
+
+class RationaleFallbackLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        if "final triskill output normalizer" in prompt.lower():
+            return "After checking the compounds, the final answer is cheese."
+        return "I am thinking step by step and not returning JSON yet."
+
+
+if __name__ == "__main__":
+    unittest.main()

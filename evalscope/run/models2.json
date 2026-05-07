@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "name": "deepseek-r1-distill-qwen-32b",
+      "model": "DeepSeek-R1-Distill-Qwen-32B",
+      "api_url": "https://notebook-inspire.sii.edu.cn/ws-9dcc0e1f-80a4-4af2-bc2f-0e352e7b17e6/project-b795c114-135a-40db-b3d0-19b60f25237b/user-543feed4-0be2-4972-8987-a324af06c93f/vscode/3e5fdf69-21a6-4a85-b454-ed5add62c964/b0bede15-ed07-44e9-94bc-e607097dceb9/proxy/8035/v1",
+      "api_key": "EMPTY"
+    },
+    {
+      "name": "deepseek-r1-distill-qwen-14b",
+      "model": "DeepSeek-R1-Distill-Qwen-14B",
+      "api_url": "https://notebook-inspire.sii.edu.cn/ws-9dcc0e1f-80a4-4af2-bc2f-0e352e7b17e6/project-b795c114-135a-40db-b3d0-19b60f25237b/user-543feed4-0be2-4972-8987-a324af06c93f/vscode/3e5fdf69-21a6-4a85-b454-ed5add62c964/b0bede15-ed07-44e9-94bc-e607097dceb9/proxy/8036/v1",
+      "api_key": "EMPTY"
+    },
+    {
+      "name": "deepseek-r1-distill-qwen-7b",
+      "model": "DeepSeek-R1-Distill-Qwen-7B",
+      "api_url": "https://notebook-inspire.sii.edu.cn/ws-9dcc0e1f-80a4-4af2-bc2f-0e352e7b17e6/project-b795c114-135a-40db-b3d0-19b60f25237b/user-543feed4-0be2-4972-8987-a324af06c93f/vscode/3e5fdf69-21a6-4a85-b454-ed5add62c964/b0bede15-ed07-44e9-94bc-e607097dceb9/proxy/8037/v1",
+      "api_key": "EMPTY"
+    },
+    {
+      "name": "deepseek-r1-distill-qwen-1.5b",
+      "model": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "api_url": "https://notebook-inspire.sii.edu.cn/ws-9dcc0e1f-80a4-4af2-bc2f-0e352e7b17e6/project-b795c114-135a-40db-b3d0-19b60f25237b/user-543feed4-0be2-4972-8987-a324af06c93f/vscode/3e5fdf69-21a6-4a85-b454-ed5add62c964/b0bede15-ed07-44e9-94bc-e607097dceb9/proxy/8038/v1",
+      "api_key": "EMPTY"
+    }
+  ]
+}

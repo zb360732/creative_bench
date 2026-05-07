@@ -1,0 +1,10 @@
+[
+  {
+    "query": "Please provide 10 words that are semantically distant from each other. The words should be as unrelated as possible in meaning.\n\nPlease provide your answer in the following JSON format:\n{\n  \"words\": [\n    \"word1\",\n    \"word2\",\n    \"word3\",\n    \"word4\",\n    \"word5\",\n    \"word6\",\n    \"word7\",\n    \"word8\",\n    \"word9\",\n    \"word10\"\n  ]\n}\n\nList exactly 10 words that are semantically diverse and unrelated.",
+    "category": "DAT"
+  }
+]
+
+
+
+

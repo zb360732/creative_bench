@@ -1,0 +1,13 @@
+Find a single word that connects with all three words to form common compound words or phrases.
+
+Words: cottage/swiss/cake
+
+Provide a single word that can meaningfully combine with each of the three words above.
+
+Please provide your answer in the following JSON format inside <answer> tags:
+
+<answer>
+{
+  "word": "connecting_word"
+}
+</answer>

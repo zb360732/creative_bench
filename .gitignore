@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and local config
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+*.tar.gz
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+.DS_Store
+.codex
+temp/
+tmp/
+
+# Experiment outputs and local generated artifacts
+outputs/
+output/
+logs/
+evalscope/benchmark/outputs/
+evalscope/outputs/
+evalscope/temp/
+
+# Model/checkpoint files
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+
+# Local caches and downloaded datasets/models
+cache/
+.cache/
+dataprocess/model/
+evalscope/dataprocess/model/
+
+# Local credentials/configs
+evalscope/run/models.json
+evalscope/run/llm_judge.json
+
+# Nested repository metadata should not be committed into the outer repo
+**/.git/
