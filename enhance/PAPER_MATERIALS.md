@@ -1,0 +1,393 @@
+# TriSkill Paper Materials
+
+This document maintains paper-ready material collected during the benchmark and
+elicitation work. It is intentionally separate from `solution.md`: `solution.md`
+defines the target framework, while this file records claims, evidence,
+wording, results, caveats, and future paper assets.
+
+## Paper Positioning
+
+Working title:
+
+```text
+TriSkill: Definition-Guided and Metric-Conditioned Creativity Elicitation for Large Language Models
+```
+
+Core framing:
+
+```text
+We study creativity elicitation, not only creativity measurement. Given a fixed
+LLM and a creativity benchmark, TriSkill asks whether a definition-guided and
+metric-conditioned test-time workflow can systematically shift the model's
+observed creativity profile without training, benchmark modification, or access
+to hidden references.
+```
+
+One-sentence method summary:
+
+```text
+TriSkill profiles each creativity task by its creativity definition, maps
+heterogeneous raw benchmark metrics into canonical creativity objectives,
+composes reusable inference-time skills, and executes a leakage-free workflow
+that generates, verifies, selects, and normalizes candidate outputs.
+```
+
+Short contribution list:
+
+- Creativity elicitation as measurable profile shift rather than static prompt-only evaluation.
+- Definition-guided routing across combinational, exploratory, and transformational creativity.
+- Metric-conditioned skill composition through canonical creativity metrics.
+- Leakage-free test-time workflow that uses only visible task input, output schema, task type, and metric semantics.
+- Empirical evidence on combinational creativity tasks with full-run results for `models2.json`.
+
+## Method Vocabulary
+
+Recommended names:
+
+- Framework: `TriSkill`
+- Full method: `TriSkill full`
+- Paper method name: `Definition-Guided and Metric-Conditioned Creativity Elicitation`
+- Evaluation view: `creativity profile shift`
+- Main workflow components:
+  - `Task Profiler`
+  - `Metric Abstraction Layer`
+  - `Workflow Router`
+  - `Skill Composer`
+  - `Workflow Executor`
+  - `Verifier / Selector`
+  - `Output Normalizer`
+
+Central slogan:
+
+```text
+Definition chooses the workflow.
+Metrics choose the skills.
+Skills guide inference.
+The benchmark measures the profile shift.
+```
+
+## Task Taxonomy
+
+Current implemented taxonomy:
+
+- `combinational`: DAT, BATS, RAT, Metaphor
+- `exploratory`: AUT, CreativeMath, CS4, NeoCoder
+- `transformational`: Transformation-style rule/system rebuilding tasks
+
+For the current full validation, only the four combinational tasks were used
+because LLM-judge based tasks were intentionally excluded from this phase.
+
+Combinational subtypes:
+
+| Task | Subtype | Cognitive operation | Metric character |
+|---|---|---|---|
+| DAT | divergent semantic recombination | assemble semantically distant words | open-ended semantic distance |
+| BATS | analogical relation transfer | infer A:B relation and apply to C:? | single-answer accuracy |
+| RAT | remote associative bridging | find one bridge word across three clues | single-answer accuracy |
+| Metaphor | cross-domain property mapping | map source-domain property into context | single-answer accuracy |
+
+Important paper nuance:
+
+```text
+BATS, RAT, and Metaphor are combinational in their cognitive operation, but
+convergent in their scoring interface. Their final score rewards exact answer
+selection, not the diversity or quality of intermediate combinations.
+```
+
+This explains why gains are expected to be smaller than on open-ended
+divergent tasks such as DAT.
+
+## Current Implementation
+
+Code location:
+
+- `enhance/triskill/profiles.py`: task profiles, raw metric aliases, canonical metrics, budgets, skill lists
+- `enhance/triskill/executor.py`: workflow execution, direct seed, skill trace, artifact assembly
+- `enhance/triskill/runtime_skills.py`: runtime skill prompts, verifier behavior, candidate/selection update
+- `enhance/triskill/normalizer.py`: final benchmark-compatible answer normalization
+- `enhance/run_combination_validation.py`: direct vs TriSkill validation driver over evalscope
+
+Current combinational workflow behavior:
+
+- DAT:
+  - skills: semantic domain expansion, lexical validity check, diversity filtering, output normalization
+  - objective: maximize semantic diversity while preserving lexical and format validity
+- BATS:
+  - skills: relation abstraction, relation verification, lexical validity check, output normalization
+  - objective: preserve relation direction, entity type, and abstraction level
+- RAT:
+  - skills: bridge search, relation verification, lexical validity check, output normalization
+  - objective: find one bridge satisfying all visible clues
+- Metaphor:
+  - skills: metaphorical property mapping, relation verification, lexical validity check, output normalization
+  - objective: preserve metaphorical fit and context fit
+
+Current conservative design choice:
+
+```text
+For BATS and Metaphor, direct-seed anchoring is used to avoid replacing a
+correct direct answer with a weaker workflow candidate. This protects accuracy
+but limits the maximum improvement size.
+```
+
+## Leakage-Free Protocol
+
+The method must not use:
+
+- gold answers
+- hidden references
+- scoring-only candidate answers
+- post-hoc scores
+- test-set aggregate statistics
+- task-specific answer maps or symbolic lookup tables
+
+Allowed inputs:
+
+- visible task prompt
+- visible choices or constraints, if provided by the benchmark prompt
+- task name
+- creativity level
+- output schema
+- metric semantics
+- canonical metric objectives
+
+Important history:
+
+```text
+Earlier small-sample attempts included task-specific symbolic/lexical adapters.
+These were removed after the no-leakage/no-task-specific-tuning constraint was
+clarified. The retained method is the general workflow only.
+```
+
+This should be mentioned in internal reproducibility notes, not necessarily in
+the main paper unless discussing method hygiene.
+
+## Full Combinational Validation
+
+Run configuration:
+
+```bash
+python enhance/run_combination_validation.py \
+  --skip-direct \
+  --limit none \
+  --work-dir /root/benchmark/outputs/combination_validation \
+  --run-name models2_combination_full_general_entitytype_nolimit \
+  --max-tokens 2048 \
+  --request-timeout 180 \
+  --max-parallel 64 \
+  --eval-batch-size 64 \
+  --judge-worker-num 1 \
+  --triskill-method triskill_full
+```
+
+Model list:
+
+```text
+/root/benchmark/evalscope/run/models2.json
+```
+
+Artifact paths:
+
+- Direct summary: `outputs/combination_validation/models2_combination_full_general_entitytype_nolimit_direct/summary.json`
+- TriSkill summary: `outputs/combination_validation/models2_combination_full_general_entitytype_nolimit_triskill_full/summary.json`
+
+Full-run results:
+
+| Model | Task | Direct | TriSkill | Delta |
+|---|---:|---:|---:|---:|
+| deepseek-r1-distill-qwen-1.5b | DAT | 0.0000 | 4.4571 | +4.4571 |
+| deepseek-r1-distill-qwen-1.5b | BATS | 0.1827 | 0.2150 | +0.0323 |
+| deepseek-r1-distill-qwen-1.5b | RAT | 0.0069 | 0.0139 | +0.0070 |
+| deepseek-r1-distill-qwen-1.5b | Metaphor | 0.1368 | 0.1649 | +0.0281 |
+| deepseek-r1-distill-qwen-14b | DAT | 4.2710 | 4.7337 | +0.4627 |
+| deepseek-r1-distill-qwen-14b | BATS | 0.5633 | 0.5655 | +0.0022 |
+| deepseek-r1-distill-qwen-14b | RAT | 0.2569 | 0.2569 | +0.0000 |
+| deepseek-r1-distill-qwen-14b | Metaphor | 0.4456 | 0.4450 | -0.0006 |
+| deepseek-r1-distill-qwen-32b | DAT | 3.6811 | 4.7337 | +1.0526 |
+| deepseek-r1-distill-qwen-32b | BATS | 0.5785 | 0.5787 | +0.0002 |
+| deepseek-r1-distill-qwen-32b | RAT | 0.2847 | 0.3194 | +0.0347 |
+| deepseek-r1-distill-qwen-32b | Metaphor | 0.4521 | 0.4677 | +0.0156 |
+| deepseek-r1-distill-qwen-7b | DAT | 5.4625 | 3.8459 | -1.6166 |
+| deepseek-r1-distill-qwen-7b | BATS | 0.4083 | 0.4425 | +0.0342 |
+| deepseek-r1-distill-qwen-7b | RAT | 0.0208 | 0.0694 | +0.0486 |
+| deepseek-r1-distill-qwen-7b | Metaphor | 0.3129 | 0.3319 | +0.0190 |
+
+Useful result statements:
+
+- `32B` improves on all four combinational tasks.
+- `1.5B` also improves on all four combinational tasks.
+- `7B` improves on three convergent tasks but regresses on DAT.
+- `14B` is mostly flat, with tiny positive/negative changes.
+- DAT gains are larger, but DAT full has only one item, so it should be treated as profile-shift evidence rather than a robust aggregate alone.
+- BATS/RAT/Metaphor gains are smaller because they are exact-match single-answer tasks.
+
+Recommended paper phrasing:
+
+```text
+On the full combinational benchmark, TriSkill yields consistent gains for the
+strongest evaluated model across divergent association, analogical transfer,
+remote association, and metaphorical mapping. The improvement is largest on DAT
+and smaller on convergent single-answer tasks, reflecting the fact that exact
+answer accuracy only partially captures the intermediate combinational process.
+```
+
+Avoid claiming:
+
+- large universal gains across all models
+- solved combinational creativity
+- statistically strong DAT conclusion from a single DAT item
+- improvements from hidden answer access
+- task-specific prompt hacking
+
+## Why Gains Are Small
+
+Paper-useful explanation:
+
+```text
+The magnitude of improvement is constrained by the scoring interface. Three of
+the four combinational tasks are convergent single-word tasks. Although their
+cognitive process requires relation abstraction, associative bridging, or
+cross-domain mapping, their metrics reward only final exact-match accuracy. As a
+result, TriSkill can improve relation checking and candidate selection, but it
+cannot receive credit for plausible intermediate candidates that do not match
+the benchmark reference.
+```
+
+Mechanistic reasons:
+
+- BATS/RAT/Metaphor require selecting one exact word, so verifier quality is the bottleneck.
+- The method cannot use hidden gold answers, so selection relies on model self-evaluation.
+- Direct baselines are already non-trivial for larger models, leaving limited headroom.
+- Conservative direct-seed anchoring reduces harmful replacements but also reduces possible upside.
+- Some improvements are diluted by exact-match lexical variation.
+
+## Failure and Risk Notes
+
+Known risks:
+
+- Self-verification can select fluent but wrong candidates.
+- Open-ended and convergent combinational objectives can conflict.
+- DAT score can be sensitive to a single final word list because the dataset contains one test item.
+- Exact-match tasks under-credit useful but non-reference creative associations.
+- Runtime cost is high because full workflow uses multiple LLM calls per sample.
+
+Observed runtime issue and fix:
+
+```text
+During full validation, `--max-parallel 64` did not translate to 64 backend
+running requests because the scheduler divided parallelism across all jobs,
+including already completed caches. The validation driver was patched to skip
+complete caches before allocating workers, so resume runs allocate parallelism
+only to incomplete jobs.
+```
+
+Commit:
+
+```text
+8869382 Improve full validation resume scheduling
+```
+
+## Validation and Version Record
+
+Relevant commits:
+
+- `be317ee Optimize general TriSkill combinational workflow`
+- `cf92743 Allow full combination validation runs`
+- `8869382 Improve full validation resume scheduling`
+
+Validation checks:
+
+```bash
+python -m py_compile enhance/run_combination_validation.py
+PYTHONPATH=enhance python -m unittest discover -s enhance/tests -p 'test_*.py'
+git diff --name-only -- evalscope
+```
+
+Observed validation status:
+
+- `25` unit tests passed.
+- `evalscope` had no source diff.
+- Full direct and TriSkill summaries completed with status `ok` for all four models.
+
+## Candidate Figures and Tables
+
+Potential tables:
+
+- Table 1: Creativity taxonomy and task mapping.
+- Table 2: Raw metric to canonical metric to skill mapping.
+- Table 3: Full combinational validation results.
+- Table 4: Model-wise win/tie/loss summary.
+- Table 5: Ablation results once run.
+
+Potential figures:
+
+- TriSkill architecture diagram:
+  `Task Profiler -> Metric Abstraction -> Workflow Router -> Skill Composer -> Executor -> Verifier -> Normalizer`
+- Creativity profile shift radar chart for the selected main model.
+- Divergent vs convergent combinational task comparison.
+- Runtime/cost breakdown by task.
+
+## Needed Next Paper Assets
+
+High-priority:
+
+- Run ablations on the main model:
+  - without verifier
+  - without direct seed
+  - prompt-only TriSkill
+  - generic creativity prompt
+  - budget-matched multi-sample direct
+- Add candidate coverage diagnostics:
+  - whether the final correct answer appeared in candidate pool
+  - whether verifier selected it
+  - how often normalization failed
+- Add qualitative examples:
+  - one DAT improvement example
+  - one RAT bridge improvement example
+  - one Metaphor improvement example
+  - one failure where verifier picks a plausible but wrong word
+
+Medium-priority:
+
+- Report cost in `num_llm_calls` and wall time.
+- Compare profile shift across model sizes.
+- Separate divergent and convergent combinational subsets in analysis.
+- Add confidence intervals or bootstrap for BATS/RAT/Metaphor.
+
+Low-priority:
+
+- Extend validation to exploratory and transformational tasks once the LLM-judge pipeline is reliable.
+- Add human-readable trace examples from `skill_trace`.
+
+## Draft Abstract Fragment
+
+```text
+Large language models are commonly evaluated on creativity benchmarks using the
+raw benchmark prompt, but this static protocol does not distinguish latent
+creative capacity from the ability of a prompt to elicit it. We propose
+TriSkill, a definition-guided and metric-conditioned test-time elicitation
+framework. TriSkill routes each task according to a creativity definition,
+maps heterogeneous benchmark metrics into canonical creativity objectives, and
+composes reusable inference-time skills such as semantic expansion, relation
+abstraction, associative bridge search, metaphorical property mapping, and
+constraint-aware verification. The framework is leakage-free: it uses only
+visible task inputs, output schemas, and metric semantics, without hidden
+answers or benchmark-specific answer maps. On combinational creativity tasks,
+TriSkill induces measurable profile shifts, with the strongest evaluated model
+improving across divergent association, analogical transfer, remote association,
+and metaphorical mapping.
+```
+
+## Draft Limitations Fragment
+
+```text
+Our current evidence is strongest for combinational creativity and should not
+be interpreted as universal improvement across all creativity forms. In
+addition, three of the four combinational tasks use exact-match single-answer
+accuracy, which under-represents the quality of intermediate creative
+associations and makes verifier selection the dominant bottleneck. DAT provides
+an open-ended divergent signal but contains only one full-test item in the
+current benchmark. Future work should add broader open-ended tasks, stronger
+budget-matched baselines, and candidate-level diagnostics.
+```
+

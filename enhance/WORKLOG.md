@@ -38,3 +38,10 @@
 - Artifacts: `/root/benchmark/outputs/combination_validation/models2_combination_limit50_general_entitytype_triskill_full/summary.json`; source changes limited to `enhance/`.
 - Error/fix: A previous hard self-consistency candidate override was unstable on small models and not retained as default. It remains as optional soft evidence only when configured with multiple direct-seed samples.
 - Current status: User's relaxed criterion is met by the 7B model; 14B/32B remain partially improved and are documented honestly for paper discussion.
+
+## [2026-05-08 16:52:26 UTC] Create paper materials document
+- Action: Added a living paper-materials document for TriSkill positioning, claims, results, caveats, and follow-up paper assets.
+- Evidence: Full `limit none` combinational validation completed for direct and `triskill_full`; summaries report `status=ok` for all four models in both runs. Unit tests passed with `25 tests OK`, and `evalscope` had no diff.
+- Artifacts: `enhance/PAPER_MATERIALS.md`; source changes remain limited to `enhance/`.
+- Error/fix: None.
+- Current status: Paper素材 now has a maintained entry point separate from implementation spec `solution.md`.
