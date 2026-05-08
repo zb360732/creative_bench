@@ -22,13 +22,14 @@ ABLATIONS: dict[str, str] = {
 
 
 VERIFIER_SKILLS = {
-    "relation_verification",
+    "combination_verification",
     "lexical_validity_check",
-    "appropriateness_check",
+    "constraint_preservation",
+    "feasibility_evaluation",
     "coherence_check",
     "execution_verification",
-    "old_world_residue_audit",
-    "goal_coverage_check",
+    "residue_audit",
+    "goal_coverage_verification",
 }
 
 
@@ -36,5 +37,5 @@ def apply_ablation_to_skill_names(skill_names: list[str], method: str) -> list[s
     if method == "triskill_without_verifier":
         return [name for name in skill_names if name not in VERIFIER_SKILLS]
     if method == "triskill_wrong_skill_assignment":
-        return ["semantic_domain_expansion", "novelty_shift", "output_normalization"]
+        return ["unit_extraction", "novelty_transformation", "output_normalization"]
     return skill_names

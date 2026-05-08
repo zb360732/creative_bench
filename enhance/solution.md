@@ -100,6 +100,44 @@ Final Answer
 TriSkill = 三层创造力 workflow + 统一指标抽象层 + skill registry + workflow executor
 ```
 
+### 2.3 当前实现中的通用 operator 化
+
+实现时不要把模块理解成“某个任务专属 prompt”。当前默认实现把三类创造力都拆成从定义出发的可复用 operator：
+
+```text
+Combinational:
+unit_extraction
+→ relation_property_abstraction
+→ candidate_recombination
+→ constraint_preservation
+→ combination_verification
+→ output_normalization
+
+Exploratory:
+constraint_space_mapping
+→ exploration_axis_expansion
+→ candidate_generation
+→ coverage_balancing / semantic_deduplication
+→ novelty_transformation
+→ feasibility_evaluation
+→ portfolio_selection
+→ output_normalization
+
+Transformational:
+rule_change_extraction
+→ legacy_assumption_mapping
+→ breakage_propagation
+→ primitive_induction
+→ system_reconstruction
+→ performance_reanchoring
+→ norm_interface_establishment
+→ residue_audit
+→ goal_coverage_verification
+→ output_normalization
+```
+
+任务 profile 只负责从公共 operator 库中选择合适子序列。这样扩展新任务时优先新增 / 修改 profile 和 canonical metrics，而不是为任务手写 prompt。
+
 ---
 
 ## 3. 核心原则

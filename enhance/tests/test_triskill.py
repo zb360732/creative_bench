@@ -16,16 +16,17 @@ from triskill.runner import run_dataset
 
 
 class TriSkillTest(unittest.TestCase):
-    def test_rat_profile_selects_combinational_bridge_skills(self):
+    def test_rat_profile_selects_combinational_operator_modules(self):
         profile = profile_task("rat")
         enhancer = TriSkillEnhancer(profile)
         plan = enhancer.plan()
 
         self.assertEqual(plan["creativity_level"], "combinational")
         self.assertIn("associative_bridge", plan["canonical_metrics"])
-        self.assertIn("bridge_search", plan["skills"])
-        self.assertIn("relation_verification", plan["skills"])
-        self.assertNotIn("metaphorical_property_mapping", plan["skills"])
+        self.assertIn("unit_extraction", plan["skills"])
+        self.assertIn("relation_property_abstraction", plan["skills"])
+        self.assertIn("candidate_recombination", plan["skills"])
+        self.assertIn("combination_verification", plan["skills"])
 
     def test_aut_profile_selects_exploratory_skills(self):
         profile = profile_task("aut")
@@ -34,8 +35,8 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertEqual(plan["creativity_level"], "exploratory")
         self.assertIn("novelty", plan["canonical_metrics"])
-        self.assertIn("candidate_multiplication", plan["skills"])
-        self.assertIn("appropriateness_check", plan["skills"])
+        self.assertIn("candidate_generation", plan["skills"])
+        self.assertIn("feasibility_evaluation", plan["skills"])
         self.assertEqual(plan["skills"][-1], "output_normalization")
 
     def test_enhanced_prompt_preserves_answer_schema(self):
@@ -53,8 +54,8 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertEqual(plan["task_name"], "transformation")
         self.assertEqual(plan["creativity_level"], "transformational")
-        self.assertIn("architecture_reconstruction", plan["skills"])
-        self.assertIn("old_world_residue_audit", plan["skills"])
+        self.assertIn("system_reconstruction", plan["skills"])
+        self.assertIn("residue_audit", plan["skills"])
 
     def test_profile_contains_budgets_and_output_normalization(self):
         plan = TriSkillEnhancer(profile_task("dat")).plan()
@@ -196,7 +197,7 @@ class TriSkillTest(unittest.TestCase):
             rows = run_dataset("rat", str(input_path), str(output_path), method="triskill_without_verifier", llm=FakeLLM())
 
             self.assertEqual(len(rows), 1)
-            self.assertNotIn("relation_verification", rows[0]["skills"])
+            self.assertNotIn("combination_verification", rows[0]["skills"])
             self.assertIn("output_normalization", rows[0]["skills"])
 
     def test_analysis_and_prediction_bridge(self):
@@ -277,7 +278,7 @@ class FakeLLM:
     def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
         if "output_normalization" in prompt.lower():
             return '<answer>{"word":"cheese"}</answer>'
-        if "scored_candidates" in prompt or "relation_verification" in prompt:
+        if "scored_candidates" in prompt or "combination_verification" in prompt:
             return '{"scored_candidates":[{"candidate":"cheese","score":3,"valid":true}],"best_candidate":"cheese"}'
         return '{"candidates":[{"word":"cheese","connections":[{"clue":"cottage","connection":"cottage cheese"}],"all_three_fit":true}],"best_candidate":"cheese"}'
 
@@ -294,7 +295,7 @@ class VerifierOverwritesLLM:
         lower = prompt.lower()
         if "give your best direct answer first" in lower:
             return '{"target":"guinea"}'
-        if "relation_verification" in lower or "lexical_validity_check" in lower:
+        if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"target":"indonesia","score":1}}'
         return '{"candidates":[{"target":"indonesia"}],"best_candidate":{"target":"indonesia"}}'
 
@@ -304,7 +305,7 @@ class MetaphorDirectLLM:
         lower = prompt.lower()
         if "give your best direct answer first" in lower:
             return '{"word":"direction"}'
-        if "relation_verification" in lower or "lexical_validity_check" in lower:
+        if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"word":"method","score":1}}'
         return '{"candidates":[{"word":"method"}],"best_candidate":{"word":"method"}}'
 
@@ -314,7 +315,7 @@ class ExplicitChoiceLLM:
         lower = prompt.lower()
         if "give your best direct answer first" in lower:
             return "I compare the compounds and choose cheese."
-        if "relation_verification" in lower or "lexical_validity_check" in lower:
+        if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"word":"cheese","score":1}}'
         return '{"candidates":[{"word":"cheese"}],"best_candidate":{"word":"cheese"}}'
 
@@ -330,7 +331,7 @@ class ConsensusSeedLLM:
             if self.seed_calls == 1:
                 return '{"word":"cake"}'
             return '{"word":"cheese"}'
-        if "relation_verification" in lower or "lexical_validity_check" in lower:
+        if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"word":"cake","score":1}}'
         return '{"candidates":[{"word":"cake"}],"best_candidate":{"word":"cake"}}'
 

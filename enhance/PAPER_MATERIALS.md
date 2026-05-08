@@ -66,6 +66,59 @@ Skills guide inference.
 The benchmark measures the profile shift.
 ```
 
+## Generalized Operator Library
+
+The module library should be described as definition-derived operators, not as
+benchmark-task prompts. A task profile selects a subset of these reusable
+operators using public creativity type and canonical metric objectives.
+
+Combinational operators:
+
+| Operator | Role |
+|---|---|
+| `unit_extraction` | Extract recombinable units: words, concepts, entities, properties, relations, contexts, and constraints. |
+| `relation_property_abstraction` | Abstract the relation, property, role, or semantic axis connecting units. |
+| `candidate_recombination` | Generate new combinations by transferring relations, bridging units, mapping properties, or assembling distant semantic units. |
+| `constraint_preservation` | Preserve hard constraints after recombination: entity type, relation direction, part of speech, context, grammar, feasibility, and schema. |
+| `combination_verification` | Verify that the recombined candidate meaningfully connects the required units. |
+| `diversity_filtering` | Select a semantically diverse subset when the task rewards divergent combinations. |
+| `output_normalization` | Convert the selected candidate into the benchmark-required final format. |
+
+Exploratory operators:
+
+| Operator | Role |
+|---|---|
+| `constraint_space_mapping` | Map hard constraints, soft preferences, forbidden outputs, format, and creative freedom. |
+| `exploration_axis_expansion` | Expand distinct strategy axes or search directions. |
+| `candidate_generation` | Produce multiple candidates across axes. |
+| `coverage_balancing` | Preserve category, mechanism, or solution-structure coverage. |
+| `novelty_transformation` | Push candidates toward novelty without violating feasibility. |
+| `semantic_deduplication` | Remove duplicate or near-duplicate ideas. |
+| `feasibility_evaluation` | Reject infeasible, irrelevant, incoherent, unsafe, or constraint-breaking candidates. |
+| `portfolio_selection` | Select the best candidate under correctness, novelty, flexibility, and appropriateness trade-offs. |
+
+Transformational operators:
+
+| Operator | Role |
+|---|---|
+| `rule_change_extraction` | Extract changed rules and goals. |
+| `legacy_assumption_mapping` | Identify old assumptions, mechanisms, interfaces, measurements, and language. |
+| `breakage_propagation` | Trace how changed rules break the legacy system. |
+| `primitive_induction` | Introduce new variables, roles, primitives, interfaces, or validity conditions. |
+| `system_reconstruction` | Rebuild the system around new primitives rather than patching the old one. |
+| `performance_reanchoring` | Restore performance criteria under the new rule world. |
+| `norm_interface_establishment` | Define new standards, interfaces, training language, validation, and coordination norms. |
+| `residue_audit` | Remove hidden dependence on invalid old-world assumptions. |
+| `goal_coverage_verification` | Verify that stated goals are covered by concrete mechanisms. |
+
+Important framing:
+
+```text
+The operator library is derived from creativity definitions. Benchmark tasks do
+not receive bespoke prompts; they instantiate profiles that choose reusable
+operators from the library.
+```
+
 ## Task Taxonomy
 
 Current implemented taxonomy:
@@ -110,16 +163,16 @@ Code location:
 Current combinational workflow behavior:
 
 - DAT:
-  - skills: semantic domain expansion, lexical validity check, diversity filtering, output normalization
+  - operators: unit extraction, candidate recombination, diversity filtering, constraint preservation, output normalization
   - objective: maximize semantic diversity while preserving lexical and format validity
 - BATS:
-  - skills: relation abstraction, relation verification, lexical validity check, output normalization
+  - operators: unit extraction, relation/property abstraction, candidate recombination, combination verification, constraint preservation, output normalization
   - objective: preserve relation direction, entity type, and abstraction level
 - RAT:
-  - skills: bridge search, relation verification, lexical validity check, output normalization
+  - operators: unit extraction, relation/property abstraction, candidate recombination, combination verification, constraint preservation, output normalization
   - objective: find one bridge satisfying all visible clues
 - Metaphor:
-  - skills: metaphorical property mapping, relation verification, lexical validity check, output normalization
+  - operators: unit extraction, relation/property abstraction, candidate recombination, combination verification, constraint preservation, output normalization
   - objective: preserve metaphorical fit and context fit
 
 Current conservative design choice:
@@ -390,4 +443,3 @@ an open-ended divergent signal but contains only one full-test item in the
 current benchmark. Future work should add broader open-ended tasks, stronger
 budget-matched baselines, and candidate-level diagnostics.
 ```
-

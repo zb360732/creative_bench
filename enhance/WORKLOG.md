@@ -45,3 +45,10 @@
 - Artifacts: `enhance/PAPER_MATERIALS.md`; source changes remain limited to `enhance/`.
 - Error/fix: None.
 - Current status: Paper素材 now has a maintained entry point separate from implementation spec `solution.md`.
+
+## [2026-05-08 17:38:37 UTC] Generalize workflow modules into definition-derived operators
+- Action: Renamed and reorganized combinational, exploratory, and transformational modules as reusable operators derived from creativity definitions rather than task-flavored prompts.
+- Evidence: `PYTHONPATH=enhance python -m unittest discover -s enhance/tests -p 'test_*.py'` passed with 25 tests; `python -m py_compile enhance/triskill/*.py enhance/run_combination_validation.py enhance/triskill_cli.py` passed.
+- Artifacts: `enhance/triskill/skills.py`, `enhance/triskill/profiles.py`, `enhance/triskill/task_prompts.py`, `enhance/triskill/core.py`, `enhance/triskill/ablations.py`, `enhance/tests/test_triskill.py`, `enhance/PAPER_MATERIALS.md`.
+- Error/fix: None.
+- Current status: Profiles now compose generic operator sequences such as `unit_extraction -> relation_property_abstraction -> candidate_recombination -> combination_verification` for combinational tasks.
