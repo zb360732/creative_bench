@@ -202,9 +202,17 @@ def _generate_triskill_prediction_caches(
         for task in TASKS:
             rows = _load_task_records(task, limit=limit)
             subset = "sampled" if task == "bats" else "default"
-            jobs.append((model, model_id, task, pred_dir / f"{task}_{subset}.jsonl", rows))
+            cache_path = pred_dir / f"{task}_{subset}.jsonl"
+            if _cache_is_complete(cache_path, len(rows)):
+                print(f"[SKIP] Existing TriSkill cache: {cache_path}")
+                continue
+            jobs.append((model, model_id, task, cache_path, rows))
+
+    if not jobs:
+        return
 
     workers = max(1, min(max_parallel, len(jobs)))
+    per_job_parallel = max(1, max_parallel // workers)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [
             pool.submit(
@@ -217,7 +225,7 @@ def _generate_triskill_prediction_caches(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 request_timeout=request_timeout,
-                max_parallel=max(1, max_parallel // workers),
+                max_parallel=per_job_parallel,
                 method=method,
             )
             for model, model_id, task, cache_path, rows in jobs
@@ -233,6 +241,14 @@ def _load_task_records(task: str, limit: int | None) -> list[dict[str, Any]]:
     if limit is None:
         return records
     return records[:limit]
+
+
+def _cache_is_complete(cache_path: Path, expected_len: int) -> bool:
+    rows = _dedupe_rows(_read_jsonl(cache_path))
+    if len(rows) < expected_len:
+        return False
+    row_ids = {_row_id(row) for row in rows}
+    return all(idx in row_ids for idx in range(expected_len))
 
 
 def _write_task_cache(
