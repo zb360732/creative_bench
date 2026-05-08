@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import re
 from typing import Any, Mapping
 
 from .core import TriSkillEnhancer
-from .llm import LLM
+from .llm import LLM, parse_json_lenient
+from .normalizer import PLACEHOLDER_WORDS
 from .profiles import TaskProfile, profile_task
 from .runtime_skills import make_runtime_skill
 from .state import ElicitationState, detect_leakage_fields, item_id_from, prompt_from_item, safe_item_view
@@ -71,6 +73,12 @@ class WorkflowExecutor:
         state.artifacts["enhanced_prompt"] = enhanced_prompt
         state.artifacts["plan"] = self.enhancer.plan()
         num_llm_calls = 0
+        if self.profile.task_name in {"bats", "rat", "metaphor"}:
+            seed_artifact = _direct_seed(self.profile.task_name, state.original_prompt, llm, dict(self.profile.budgets))
+            state.artifacts["direct_seed"] = seed_artifact
+            for candidate in seed_artifact.get("candidates", []):
+                state.candidates.append(candidate)
+            num_llm_calls += int(seed_artifact.get("num_calls") or 1)
         for idx, skill in enumerate(self.enhancer.skills, start=1):
             runtime = make_runtime_skill(skill.name, skill.instruction)
             before_artifact_keys = set(state.artifacts.keys())
@@ -141,3 +149,169 @@ def run_triskill(task_name: str, item: Mapping[str, Any], llm: LLM, method: str 
 
 def profile_asdict(profile: TaskProfile) -> dict[str, Any]:
     return asdict(profile)
+
+
+def _direct_seed(task_name: str, prompt: str, llm: LLM, config: dict[str, Any]) -> dict[str, Any]:
+    task = task_name.lower()
+    schemas = {
+        "dat": '{"words":["word1","word2","word3","word4","word5","word6","word7","word8","word9","word10"]}',
+        "bats": '{"target":"answer_word"}',
+        "rat": '{"word":"connecting_word"}',
+        "metaphor": '{"word":"replacement_word"}',
+    }
+    schema = schemas.get(task)
+    if not schema:
+        return {"candidates": [], "warning": "direct_seed unsupported task"}
+    sample_count = max(1, int(config.get("direct_seed_samples", 1)))
+    sample_temperatures = _seed_temperatures(config, sample_count)
+    samples: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    for sample_index, temperature in enumerate(sample_temperatures, start=1):
+        seed_prompt = _direct_seed_prompt(prompt, schema, sample_index, sample_count)
+        raw = llm.generate(
+            prompt=seed_prompt,
+            temperature=temperature,
+            max_tokens=int(config.get("direct_seed_max_tokens", 160)),
+        )
+        parsed = parse_json_lenient(raw)
+        sample_candidates = _seed_candidates_from_value(task, parsed if parsed is not None else raw)
+        for candidate in sample_candidates:
+            candidate["source"] = "direct_seed"
+            candidate["seed_sample"] = sample_index
+            candidates.append(candidate)
+        samples.append(
+            {
+                "sample": sample_index,
+                "temperature": temperature,
+                "raw_response": raw[:1000],
+                "parsed": parsed,
+                "candidates": sample_candidates,
+            }
+        )
+    return {"num_calls": len(samples), "samples": samples, "candidates": _rank_seed_candidates(task, candidates)}
+
+
+def _direct_seed_prompt(prompt: str, schema: str, sample_index: int, sample_count: int) -> str:
+    diversity_note = ""
+    if sample_count > 1:
+        diversity_note = (
+            f"\nThis is independent attempt {sample_index} of {sample_count}. "
+            "Use the same visible prompt, but check a different plausible relation path before committing."
+        )
+    return f"""{prompt}
+
+Give your best direct answer first. Return compact JSON only, using this schema:
+{schema}
+{diversity_note}
+
+For analogy-style prompts, preserve the relation direction, entity type, and abstraction level from the first pair when a word is ambiguous.
+Do not explain. Do not use placeholder values from the schema. Put the final compact JSON on the last line if you need to think internally.
+""".strip()
+
+
+def _seed_temperatures(config: dict[str, Any], sample_count: int) -> list[float]:
+    base = float(config.get("direct_seed_temperature", 0.0))
+    spread = config.get("direct_seed_temperature_spread")
+    if spread is None:
+        spread = [base, 0.2, 0.4, 0.6]
+    values = [float(item) for item in spread]
+    if not values:
+        values = [base]
+    while len(values) < sample_count:
+        values.append(values[-1])
+    return values[:sample_count]
+
+
+def _rank_seed_candidates(task: str, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    field = "target" if task == "bats" else "word"
+    if task == "dat":
+        return candidates
+    counts: dict[str, int] = {}
+    first_seen: dict[str, int] = {}
+    for index, candidate in enumerate(candidates):
+        word = _clean_seed_word(candidate.get(field) or candidate.get("word") or candidate.get("target"))
+        if not word:
+            continue
+        key = word.lower()
+        counts[key] = counts.get(key, 0) + 1
+        first_seen.setdefault(key, index)
+    ranked: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for candidate in sorted(
+        candidates,
+        key=lambda item: (
+            -counts.get(_clean_seed_word(item.get(field) or item.get("word") or item.get("target")).lower(), 0),
+            first_seen.get(_clean_seed_word(item.get(field) or item.get("word") or item.get("target")).lower(), 10**9),
+        ),
+    ):
+        word = _clean_seed_word(candidate.get(field) or candidate.get("word") or candidate.get("target"))
+        if not word:
+            continue
+        key = word.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        ranked_candidate = dict(candidate)
+        ranked_candidate[field] = word
+        ranked_candidate["seed_votes"] = counts[key]
+        ranked.append(ranked_candidate)
+    return ranked
+
+
+def _seed_candidates_from_value(task: str, value: Any) -> list[dict[str, Any]]:
+    if task == "dat":
+        words: list[str] = []
+        if isinstance(value, dict) and isinstance(value.get("words"), list):
+            words = [_clean_seed_word(item) for item in value["words"]]
+        words = [word for word in words if word]
+        return [{"words": words, "source": "direct_seed"}] if words else []
+    field = "target" if task == "bats" else "word"
+    word = ""
+    if isinstance(value, dict):
+        for key in (field, "word", "target", "answer", "best_candidate", "selected"):
+            if key in value:
+                word = _clean_seed_word(value[key])
+                if word:
+                    break
+    if not word:
+        word = _extract_seed_single_word(str(value))
+    return [{field: word, "source": "direct_seed"}] if word else []
+
+
+def _extract_seed_single_word(text: str) -> str:
+    patterns = (
+        r"['\"](?:word|target|answer)['\"]\s*:\s*['\"]([^'\"]+)['\"]",
+        r"(?:final answer|answer|target|word)\s*(?:is|:)\s*['\"]?([A-Za-z][A-Za-z0-9_-]*)",
+        r"(?:choose|select|use|go with)\s+['\"]?([A-Za-z][A-Za-z0-9_-]*)",
+    )
+    for pattern in patterns:
+        for match in reversed(re.findall(pattern, text, flags=re.IGNORECASE)):
+            word = _clean_seed_word(match)
+            if word:
+                return word
+    return ""
+
+
+def _extract_seed_words(text: str) -> list[str]:
+    seen: set[str] = set()
+    words: list[str] = []
+    for match in re.findall(r"[A-Za-z][A-Za-z0-9_-]*", text):
+        word = _clean_seed_word(match)
+        if not word:
+            continue
+        key = word.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        words.append(word)
+        if len(words) >= 10:
+            break
+    return words
+
+
+def _clean_seed_word(value: Any) -> str:
+    match = re.search(r"[A-Za-z][A-Za-z0-9_-]*", str(value or ""))
+    if not match:
+        return ""
+    word = match.group(0)
+    return "" if word.lower() in PLACEHOLDER_WORDS else word

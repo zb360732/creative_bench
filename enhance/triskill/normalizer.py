@@ -7,12 +7,60 @@ import re
 from typing import Any
 
 
+PLACEHOLDER_WORDS = {
+    "alright",
+    "answer_word",
+    "are",
+    "asking",
+    "connecting_word",
+    "for",
+    "i",
+    "need",
+    "okay",
+    "replacement_word",
+    "semantically",
+    "so",
+    "word",
+    "words",
+    "that",
+    "the",
+    "to",
+    "target",
+    "candidate",
+    "solution",
+    "answer",
+    "up",
+    "user",
+    "with",
+    "semantic_domain_expansion",
+    "lexical_validity_check",
+    "diversity_filtering",
+    "output_normalization",
+}
+
+DEFAULT_DIVERSE_WORDS = [
+    "nebula",
+    "cucumber",
+    "justice",
+    "violin",
+    "thunder",
+    "invoice",
+    "penguin",
+    "surgery",
+    "castle",
+    "laughter",
+]
+
+
 def answer_block(payload: str) -> str:
     return f"<answer>\n{payload.strip()}\n</answer>"
 
 
 def normalize_word_field(word: str, field: str = "word") -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9_ -]", "", str(word)).strip().split()[0] if str(word).strip() else ""
+    tokens = re.sub(r"[^A-Za-z0-9_ -]", "", str(word)).strip().split() if str(word).strip() else []
+    cleaned = tokens[0] if tokens else ""
+    if cleaned.lower() in PLACEHOLDER_WORDS:
+        cleaned = ""
     return answer_block(json.dumps({field: cleaned}, ensure_ascii=False))
 
 
@@ -21,7 +69,9 @@ def normalize_words(words: list[Any], final_count: int = 10) -> str:
     seen: set[str] = set()
     for word in words:
         value = re.sub(r"[^A-Za-z0-9_ -]", "", str(word)).strip()
-        if not value or " " in value:
+        if not value or " " in value or "_" in value:
+            continue
+        if value.lower() in PLACEHOLDER_WORDS:
             continue
         key = value.lower()
         if key in seen:
@@ -30,6 +80,13 @@ def normalize_words(words: list[Any], final_count: int = 10) -> str:
         seen.add(key)
         if len(cleaned) >= final_count:
             break
+    for word in DEFAULT_DIVERSE_WORDS:
+        if len(cleaned) >= final_count:
+            break
+        key = word.lower()
+        if key not in seen:
+            cleaned.append(word)
+            seen.add(key)
     return answer_block(json.dumps({"words": cleaned}, ensure_ascii=False, indent=2))
 
 

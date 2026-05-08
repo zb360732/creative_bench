@@ -222,14 +222,16 @@ def _write_task_cache(
 ) -> None:
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     json_path = cache_path.with_suffix(".json")
-    existing_rows = _read_jsonl(cache_path)
-    if len(existing_rows) >= len(records):
+    existing_rows = _dedupe_rows(_read_jsonl(cache_path))
+    existing_by_id = {_row_id(row): row for row in existing_rows}
+    if len(existing_by_id) >= len(records) and all(idx in existing_by_id for idx in range(len(records))):
         print(f"[SKIP] Existing TriSkill cache: {cache_path}")
+        ordered_rows = [existing_by_id[idx] for idx in range(len(records))]
+        _rewrite_jsonl(cache_path, ordered_rows)
         if not json_path.exists():
-            json_path.write_text(json.dumps(existing_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+            json_path.write_text(json.dumps(ordered_rows, ensure_ascii=False, indent=2), encoding="utf-8")
         return
 
-    start = len(existing_rows)
     output_rows: list[dict[str, Any]] = list(existing_rows)
 
     def build_row(idx: int, record: dict[str, Any]) -> dict[str, Any]:
@@ -263,18 +265,20 @@ def _write_task_cache(
             method=method,
         )
 
-    pending = list(enumerate(records[start:], start=start))
+    pending = [(idx, record) for idx, record in enumerate(records) if idx not in existing_by_id]
     workers = max(1, min(max_parallel, len(pending)))
     with cache_path.open("a", encoding="utf-8") as handle, ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(build_row, idx, record): idx for idx, record in pending}
         for future in as_completed(futures):
             idx = futures[future]
             row = future.result()
-            output_rows.append(row)
+            existing_by_id[idx] = row
+            output_rows = list(existing_by_id.values())
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
             handle.flush()
             print(f"[DONE] {model_id} {task} {idx + 1}/{len(records)}")
-    output_rows = sorted(output_rows, key=lambda row: int(row.get("sample_id", row.get("index", 0))))
+    output_rows = [existing_by_id[idx] for idx in sorted(existing_by_id) if idx < len(records)]
+    _rewrite_jsonl(cache_path, output_rows)
     json_path.write_text(json.dumps(output_rows, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
@@ -516,6 +520,23 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
             if line.strip():
                 rows.append(json.loads(line))
     return rows
+
+
+def _row_id(row: dict[str, Any]) -> int:
+    return int(row.get("sample_id", row.get("index", 0)))
+
+
+def _dedupe_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_id: dict[int, dict[str, Any]] = {}
+    for row in rows:
+        by_id[_row_id(row)] = row
+    return [by_id[idx] for idx in sorted(by_id)]
+
+
+def _rewrite_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

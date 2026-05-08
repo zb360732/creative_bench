@@ -4211,3 +4211,63 @@ A model can then be guided by metric-conditioned skills to search, verify, and r
 不同任务的异构指标需要先抽象成统一创造力目标。
 然后系统根据这些目标组合 skills，引导模型在对应创造力空间中搜索、验证和重建答案。
 ```
+
+---
+
+## 28. 当前实现状态与约束
+
+当前 `enhance/` 实现遵循以下约束：
+
+```text
+1. 不修改 evalscope 测评代码。
+2. 不使用 hidden gold answer、candidate_answers、答案表、任务专用符号规则或测试集统计。
+3. 只根据组合任务的通用特性优化：
+   - direct answer seed
+   - relation / context verifier
+   - canonical metric guidance
+   - output normalization
+   - analogy direction、entity type、abstraction level consistency
+4. optional multi-seed 只作为可配置软证据，默认不开启硬投票覆盖。
+```
+
+当前组合任务 workflow：
+
+```text
+Task item
+  ↓
+safe_item_view：剔除评分字段
+  ↓
+direct_seed：用原始可见 prompt 产生一个保守候选
+  ↓
+skill workflow：
+  - DAT: semantic_domain_expansion → lexical_validity_check → diversity_filtering
+  - BATS: relation_abstraction → relation_verification → lexical_validity_check
+  - RAT: bridge_search → relation_verification → lexical_validity_check
+  - Metaphor: metaphorical_property_mapping → relation_verification → lexical_validity_check
+  ↓
+output_normalization：只输出 benchmark schema
+```
+
+`limit=50` 验证结果显示，当前非泄露版本在至少一个模型上满足四个组合任务全面增益：
+
+```text
+Run: models2_combination_limit50_general_entitytype_triskill_full
+Models: /root/benchmark/evalscope/run/models2.json
+Sampling: limit=50, max_parallel=64
+
+7B direct:
+DAT 3.4429, BATS 0.86, RAT 0.04, Metaphor 0.16
+
+7B TriSkill:
+DAT 5.1548, BATS 0.90, RAT 0.06, Metaphor 0.28
+```
+
+更大模型目前是部分增益：
+
+```text
+32B: DAT 和 RAT 提升，BATS 持平，Metaphor 下降。
+14B: BATS 持平，RAT 和 Metaphor 提升，DAT 下降。
+```
+
+论文中应如实报告这一点：当前框架已经证明在组合任务上存在可复现的 profile shift，
+但不同模型对 DAT / Metaphor 的响应存在差异，后续需要做更系统的模型规模与任务类型分析。

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -24,6 +25,8 @@ class OpenAICompatibleLLM:
     model: str
     api_key: str = "EMPTY"
     timeout: int = 120
+    retries: int = 2
+    retry_interval: float = 5.0
 
     @classmethod
     def from_env(cls) -> "OpenAICompatibleLLM":
@@ -48,13 +51,24 @@ class OpenAICompatibleLLM:
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"},
             method="POST",
         )
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as response:
-                body = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            details = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"LLM HTTP error {exc.code}: {details[:500]}") from exc
-        return str(body["choices"][0]["message"]["content"])
+        last_error: Exception | None = None
+        for attempt in range(max(1, self.retries + 1)):
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as response:
+                    body = json.loads(response.read().decode("utf-8"))
+                return str(body["choices"][0]["message"]["content"])
+            except urllib.error.HTTPError as exc:
+                details = exc.read().decode("utf-8", errors="replace")
+                last_error = RuntimeError(f"LLM HTTP error {exc.code}: {details[:500]}")
+                if 400 <= exc.code < 500 and exc.code not in {408, 409, 425, 429}:
+                    raise last_error from exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                last_error = exc
+            if attempt < self.retries:
+                time.sleep(self.retry_interval * (attempt + 1))
+        if last_error is not None:
+            raise RuntimeError(f"LLM request failed after {self.retries + 1} attempts: {last_error}") from last_error
+        raise RuntimeError("LLM request failed without an exception")
 
 
 def extract_json_text(text: str) -> str | None:

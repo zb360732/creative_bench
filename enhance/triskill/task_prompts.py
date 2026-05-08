@@ -5,13 +5,13 @@ from __future__ import annotations
 
 TASK_SKILL_GUIDANCE: dict[str, dict[str, str]] = {
     "dat": {
-        "semantic_domain_expansion": "Generate 30-50 common concrete English nouns from maximally different broad domains. Return candidates with word and domain.",
-        "diversity_filtering": "Select exactly 10 words, at most one from each broad domain; reject proper nouns, rare terms, phrases, synonyms, and close associates.",
+        "semantic_domain_expansion": "Generate 30-50 common single English nouns from maximally different broad domains. Return compact JSON only with candidates containing word and domain. Do not reason in prose.",
+        "diversity_filtering": "Select exactly 10 common single words, at most one from each broad domain. Prefer concrete nouns from unrelated domains such as astronomy, food, emotion, tool, animal, law, music, weather, medicine, finance. Reject discourse words, proper nouns, rare terms, phrases, synonyms, and close associates.",
         "output_normalization": "Return only JSON with field words inside <answer> tags.",
     },
     "bats": {
-        "relation_abstraction": "Infer A:B relation, then apply the same relation to C. Consider semantic and morphological relations.",
-        "relation_verification": "Score whether A:B and C:y instantiate the same relation. Prefer common direct answers.",
+        "relation_abstraction": "Infer A:B relation and direction, then apply the same relation to C. Preserve the entity type and abstraction level from the first pair when a term is ambiguous.",
+        "relation_verification": "Score whether A:B and C:y instantiate the same relation, direction, entity type, and abstraction level. Prefer common direct answers.",
         "output_normalization": "Return only JSON with field word inside <answer> tags.",
     },
     "rat": {

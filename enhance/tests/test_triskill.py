@@ -9,8 +9,8 @@ from triskill.dataset import enhance_dataset_file
 from triskill.diagnostics import diagnose_transformation
 from triskill.evalscope_bridge import artifacts_to_predictions
 from triskill.execution_hooks import verify_math_solution, verify_python_code
-from triskill.executor import run_triskill
-from triskill.llm import parse_json_lenient
+from triskill.executor import _direct_seed, run_triskill
+from triskill.llm import OpenAICompatibleLLM, parse_json_lenient
 from triskill.paper_pipeline import audit_artifacts, create_experiment_manifest, join_scores, write_scored_summary
 from triskill.runner import run_dataset
 
@@ -114,8 +114,9 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertIn("<answer>", artifact["final_answer"])
         self.assertIn('"word": "cheese"', artifact["final_answer"])
-        self.assertGreaterEqual(artifact["num_llm_calls"], 3)
+        self.assertGreaterEqual(artifact["num_llm_calls"], 4)
         self.assertNotIn("answer", artifact["safe_item"])
+        self.assertIn("direct_seed", artifact["artifacts"])
 
     def test_full_executor_normalizes_rationale_fallback(self):
         item = {"query": "Find a single word for cottage/swiss/cake.", "answer": "cheese", "category": "RAT"}
@@ -124,6 +125,67 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn("<answer>", artifact["final_answer"])
         self.assertIn('"word": "cheese"', artifact["final_answer"])
         self.assertNotIn("thinking step by step", artifact["final_answer"])
+
+    def test_bats_prefers_direct_seed_over_weaker_verifier(self):
+        item = {"query": "Complete analogy: berlin : germany :: conakry : ?", "target_words": ["guinea"]}
+        artifact = run_triskill("bats", item, llm=VerifierOverwritesLLM(), method="triskill_full")
+
+        self.assertIn('"target": "guinea"', artifact["final_answer"])
+
+    def test_context_fit_tasks_do_not_force_direct_seed(self):
+        item = {
+            "query": "Replace *approach* with one word.",
+            "metaphor_word": "approach",
+            "candidate_answers": ["direction", "method"],
+        }
+        artifact = run_triskill("metaphor", item, llm=MetaphorDirectLLM(), method="triskill_full")
+
+        self.assertIn('"word": "method"', artifact["final_answer"])
+
+    def test_placeholder_words_are_rejected(self):
+        output = normalize_selected("rat", {"word": "connecting_word"})
+
+        self.assertIn('"word": ""', output)
+
+    def test_empty_cleaned_word_is_safe(self):
+        output = normalize_selected("rat", "!!!")
+
+        self.assertIn('"word": ""', output)
+
+    def test_discourse_words_are_rejected(self):
+        output = normalize_selected("rat", {"word": "Alright"})
+
+        self.assertIn('"word": ""', output)
+
+    def test_explicit_choice_phrase_can_seed_candidate(self):
+        item = {"query": "Find a single word for cottage/swiss/cake.", "category": "RAT"}
+        artifact = run_triskill("rat", item, llm=ExplicitChoiceLLM(), method="triskill_full")
+
+        self.assertIn('"word": "cheese"', artifact["final_answer"])
+        self.assertEqual(artifact["artifacts"]["direct_seed"]["candidates"][0]["word"], "cheese")
+
+    def test_repeated_direct_seed_candidates_are_recorded_as_soft_evidence(self):
+        artifact = _direct_seed(
+            "rat",
+            "Find a single word for cottage/swiss/cake.",
+            llm=ConsensusSeedLLM(),
+            config={"direct_seed_samples": 3, "direct_seed_max_tokens": 128},
+        )
+
+        self.assertEqual(artifact["candidates"][0]["seed_votes"], 2)
+        self.assertEqual(artifact["num_calls"], 3)
+
+    def test_dat_normalization_filters_skill_names_and_fills(self):
+        output = normalize_selected("dat", {"words": ["semantic_domain_expansion", "Whale"]})
+
+        self.assertNotIn("semantic_domain_expansion", output)
+        self.assertIn('"Whale"', output)
+        self.assertIn('"nebula"', output)
+
+    def test_openai_client_has_retries(self):
+        client = OpenAICompatibleLLM(api_url="https://example.invalid/v1", model="m", retries=3, retry_interval=0)
+
+        self.assertEqual(client.retries, 3)
 
     def test_runner_prompt_only_and_without_verifier(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -225,6 +287,52 @@ class RationaleFallbackLLM:
         if "final triskill output normalizer" in prompt.lower():
             return "After checking the compounds, the final answer is cheese."
         return "I am thinking step by step and not returning JSON yet."
+
+
+class VerifierOverwritesLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            return '{"target":"guinea"}'
+        if "relation_verification" in lower or "lexical_validity_check" in lower:
+            return '{"best_candidate":{"target":"indonesia","score":1}}'
+        return '{"candidates":[{"target":"indonesia"}],"best_candidate":{"target":"indonesia"}}'
+
+
+class MetaphorDirectLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            return '{"word":"direction"}'
+        if "relation_verification" in lower or "lexical_validity_check" in lower:
+            return '{"best_candidate":{"word":"method","score":1}}'
+        return '{"candidates":[{"word":"method"}],"best_candidate":{"word":"method"}}'
+
+
+class ExplicitChoiceLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            return "I compare the compounds and choose cheese."
+        if "relation_verification" in lower or "lexical_validity_check" in lower:
+            return '{"best_candidate":{"word":"cheese","score":1}}'
+        return '{"candidates":[{"word":"cheese"}],"best_candidate":{"word":"cheese"}}'
+
+
+class ConsensusSeedLLM:
+    def __init__(self):
+        self.seed_calls = 0
+
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            self.seed_calls += 1
+            if self.seed_calls == 1:
+                return '{"word":"cake"}'
+            return '{"word":"cheese"}'
+        if "relation_verification" in lower or "lexical_validity_check" in lower:
+            return '{"best_candidate":{"word":"cake","score":1}}'
+        return '{"candidates":[{"word":"cake"}],"best_candidate":{"word":"cake"}}'
 
 
 if __name__ == "__main__":
