@@ -41,7 +41,12 @@ from triskill.llm import OpenAICompatibleLLM  # noqa: E402
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate TriSkill on four combinational creativity tasks.")
     parser.add_argument("--models-json", default=str(EVALSCOPE_DIR / "run/models2.json"))
-    parser.add_argument("--limit", type=int, default=50)
+    parser.add_argument(
+        "--limit",
+        type=_parse_limit,
+        default=50,
+        help="Max samples per task. Use none/null/full/all for the full dataset.",
+    )
     parser.add_argument("--work-dir", default=str(ROOT / "outputs/combination_validation"))
     parser.add_argument("--run-name", default="models2_combination_limit50")
     parser.add_argument("--max-tokens", type=int, default=2048)
@@ -116,7 +121,27 @@ def main() -> int:
     return 0
 
 
-def _run_evalscope(args: argparse.Namespace, run_name: str, datasets: tuple[str, ...], limit: int, work_root: Path) -> None:
+def _parse_limit(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = str(value).strip().lower()
+    if text in {"", "none", "null", "full", "all"}:
+        return None
+    limit = int(text)
+    if limit < 0:
+        return None
+    if limit == 0:
+        raise argparse.ArgumentTypeError("--limit must be positive, or use 'none' for the full dataset")
+    return limit
+
+
+def _limit_for_evalscope(limit: int | None) -> str:
+    return "none" if limit is None else str(limit)
+
+
+def _run_evalscope(args: argparse.Namespace, run_name: str, datasets: tuple[str, ...], limit: int | None, work_root: Path) -> None:
     cmd = [
         sys.executable,
         "run/run_parallel_eval.py",
@@ -125,7 +150,7 @@ def _run_evalscope(args: argparse.Namespace, run_name: str, datasets: tuple[str,
         "--datasets",
         ",".join(datasets),
         "--limit",
-        str(limit),
+        _limit_for_evalscope(limit),
         "--max-tokens",
         str(args.max_tokens),
         "--temperature",
@@ -162,7 +187,7 @@ def _is_embedding(entry: dict[str, Any]) -> bool:
 def _generate_triskill_prediction_caches(
     models: list[dict[str, Any]],
     run_dir: Path,
-    limit: int,
+    limit: int | None,
     temperature: float,
     max_tokens: int,
     request_timeout: float,
@@ -201,10 +226,12 @@ def _generate_triskill_prediction_caches(
             future.result()
 
 
-def _load_task_records(task: str, limit: int) -> list[dict[str, Any]]:
+def _load_task_records(task: str, limit: int | None) -> list[dict[str, Any]]:
     records = json.loads(DEFAULT_DATASETS[task].read_text(encoding="utf-8"))
     if not isinstance(records, list):
         raise ValueError(f"Unsupported dataset format for {task}: {DEFAULT_DATASETS[task]}")
+    if limit is None:
+        return records
     return records[:limit]
 
 
