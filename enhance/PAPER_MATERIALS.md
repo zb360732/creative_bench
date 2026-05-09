@@ -127,8 +127,9 @@ Current implemented taxonomy:
 - `exploratory`: AUT, CreativeMath, CS4, NeoCoder
 - `transformational`: Transformation-style rule/system rebuilding tasks
 
-For the current full validation, only the four combinational tasks were used
-because LLM-judge based tasks were intentionally excluded from this phase.
+The current validation protocol has two layers: full combinational validation
+for stable non-LLM-judge metrics, and `limit=5` LLM-judge validation for
+exploratory/transformational tasks using the original benchmark judge pipeline.
 
 Combinational subtypes:
 
@@ -181,6 +182,85 @@ Current conservative design choice:
 For BATS and Metaphor, direct-seed anchoring is used to avoid replacing a
 correct direct answer with a weaker workflow candidate. This protects accuracy
 but limits the maximum improvement size.
+```
+
+Open-ended task safeguard:
+
+```text
+For solution/story/code/reconstruction tasks, TriSkill first records a direct
+answer anchor, then runs the workflow, and finally synthesizes a benchmark-ready
+answer using the direct answer as a fidelity anchor. Workflow artifacts are
+allowed to improve novelty, coverage, or flexibility only if they do not reduce
+correctness, coherence, feasibility, or constraint satisfaction.
+```
+
+This safeguard is definition-derived rather than benchmark-answer-specific: it
+addresses the generic failure mode of open-ended creative elicitation where
+search and transformation can increase exploration while degrading the base
+quality of the final answer.
+
+## LLM-Judge Validation Snapshot
+
+Configuration:
+
+- Models: `/root/benchmark/evalscope/run/models2.json`
+- Sample size: `limit=5`
+- Parallelism: `--max-parallel 64`, `--eval-batch-size 64`
+- Judge config: local `llm_judge2` endpoint injected by `enhance/run_evalscope_with_judge.py`
+- Evalscope source: unchanged
+
+AUT with corrected output normalization:
+
+| Model | Main result |
+|---|---|
+| 1.5B | Full gain on all five AUT metrics: fluency `17.8 -> 20.4`, elaboration `4.50 -> 5.68`, flexibility `11.84 -> 18.31`, originality `8.60 -> 58.61`, applicability `0.595 -> 0.623`. |
+| 7B | Improves flexibility, originality, and elaboration; fluency/applicability drop. |
+| 14B/32B | Originality or elaboration may improve, but fluency/applicability regress. |
+
+CreativeMath after open-ended fidelity anchor:
+
+| Model | Main result |
+|---|---|
+| 1.5B | Correctness/appropriateness/overall improve `0.2 -> 1.0`; novelty remains zero. |
+| 7B | Correctness/appropriateness/overall improve `0.6 -> 1.0`; novelty/originality hold. |
+| 32B | Correctness/appropriateness/overall improve `0.6 -> 1.0`; novelty/originality drop. |
+| 14B | Overall and correctness hold at `1.0`; novelty/originality drop. |
+
+Transformation after open-ended fidelity anchor:
+
+| Model | Main result |
+|---|---|
+| 7B | Full gain on all primary metrics: fluency `0.2 -> 0.6`, novelty `0.4 -> 0.9`, appropriateness `0.5 -> 1.2`, flexibility `0.0909 -> 0.6364`. |
+| 32B | Full gain on all primary metrics: fluency `0.2 -> 0.6`, novelty `0.4 -> 1.0`, appropriateness `0.6 -> 1.6`, flexibility `0.1818 -> 0.7273`. |
+| 1.5B | All metrics remain zero. |
+| 14B | Regresses from a strong direct baseline. |
+
+NeoCoder:
+
+| Model | Main result |
+|---|---|
+| 7B | Follow-constraints and fluency improve `0.8 -> 1.0`; correctness remains zero. |
+| 1.5B/14B | Mostly unchanged at zero correctness. |
+| 32B | Follow-constraints/fluency improve but correctness drops `0.2 -> 0.0`. |
+
+CS4:
+
+```text
+CS4 remains the clearest negative result. Openanchor reduces the previous
+catastrophic quality collapse but still often trades coherence, fluency, and
+QUC for modest flexibility/grammar gains. This is useful paper evidence that
+not all creative objectives benefit from generic elicitation; story-level
+constraint satisfaction appears to need stronger global coherence control.
+```
+
+Paper-safe interpretation:
+
+```text
+TriSkill produces measurable creativity-profile shifts rather than uniform
+dominance. The strongest positive story is model- and task-family-specific:
+small models benefit on AUT, medium/large models benefit on transformational
+reconstruction, and open-ended math benefits mainly in correctness/appropriateness.
+CS4 exposes the trade-off between exploration pressure and narrative coherence.
 ```
 
 ## Leakage-Free Protocol

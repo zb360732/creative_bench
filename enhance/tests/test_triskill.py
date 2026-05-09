@@ -143,6 +143,14 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertIn('"word": "method"', artifact["final_answer"])
 
+    def test_aut_normalizes_candidates_into_uses_list(self):
+        item = {"query": "List creative uses for a brick.", "item": "brick"}
+        artifact = run_triskill("aut", item, llm=AUTCandidateLLM(), method="triskill_full")
+
+        self.assertIn('"uses"', artifact["final_answer"])
+        self.assertIn("doorstop", artifact["final_answer"])
+        self.assertIn("garden marker", artifact["final_answer"])
+
     def test_placeholder_words_are_rejected(self):
         output = normalize_selected("rat", {"word": "connecting_word"})
 
@@ -175,6 +183,24 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertEqual(artifact["candidates"][0]["seed_votes"], 2)
         self.assertEqual(artifact["num_calls"], 3)
+
+    def test_aut_direct_seed_keeps_use_portfolio(self):
+        artifact = _direct_seed(
+            "aut",
+            "List creative uses for a brick.",
+            llm=AUTSeedLLM(),
+            config={"direct_seed_samples": 1, "direct_seed_max_tokens": 128},
+        )
+
+        self.assertEqual(artifact["candidates"][0]["uses"], ["doorstop", "garden marker"])
+
+    def test_openended_tasks_use_direct_seed_as_final_fidelity_anchor(self):
+        item = {"query": "Write a reconstruction plan."}
+        artifact = run_triskill("transformation", item, llm=OpenEndedAnchorLLM(), method="triskill_full")
+
+        self.assertIn("Shared network time", artifact["final_answer"])
+        self.assertNotIn("'type':", artifact["final_answer"])
+        self.assertIn("direct_seed", artifact["artifacts"])
 
     def test_dat_normalization_filters_skill_names_and_fills(self):
         output = normalize_selected("dat", {"words": ["semantic_domain_expansion", "Whale"]})
@@ -334,6 +360,31 @@ class ConsensusSeedLLM:
         if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"word":"cake","score":1}}'
         return '{"candidates":[{"word":"cake"}],"best_candidate":{"word":"cake"}}'
+
+
+class AUTCandidateLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "semantic_deduplication" in lower:
+            return '{"candidates":[{"candidate":"doorstop"},{"candidate":"garden marker"}]}'
+        if "feasibility_evaluation" in lower:
+            return '{"candidates":[{"candidate":"doorstop"},{"candidate":"garden marker"}],"best_candidate":{"candidate":"doorstop"}}'
+        return '{"candidates":[{"candidate":"doorstop"},{"candidate":"garden marker"}]}'
+
+
+class AUTSeedLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        return '{"uses":["doorstop","garden marker"]}'
+
+
+class OpenEndedAnchorLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return "Shared network time replaces local clocks, with dispatch, timetables, records, training, and audits all keyed to the same standard."
+        if "final triskill answer normalizer" in lower:
+            return "{'type': 'reconstruction_text', 'bad': 'dict-shaped artifact'}"
+        return "This is exploratory prose, not JSON."
 
 
 if __name__ == "__main__":

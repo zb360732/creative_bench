@@ -13,7 +13,7 @@ import re
 from typing import Any
 
 from .llm import LLM, call_llm_json, parse_json_lenient
-from .normalizer import DEFAULT_DIVERSE_WORDS, PLACEHOLDER_WORDS, normalize_selected
+from .normalizer import DEFAULT_DIVERSE_WORDS, PLACEHOLDER_WORDS, normalize_selected, normalize_text
 from .state import ElicitationState
 from .task_prompts import guidance_for
 
@@ -71,6 +71,20 @@ Return compact JSON. Include useful fields for this skill. If you propose candid
 
 class OutputNormalizationRuntimeSkill(RuntimeSkill):
     def run(self, state: ElicitationState, llm: LLM, config: dict[str, Any]) -> ElicitationState:
+        if state.task_name == "aut":
+            uses = _aut_uses_from_state(state)
+            if uses:
+                state.final_answer = normalize_selected(state.task_name, {"uses": uses}, dict(state.output_schema))
+                state.parse_success = True
+                state.artifacts[self.name] = {"final_answer": state.final_answer, "parse_success": state.parse_success}
+                return state
+
+        if _is_openended_text_task(state):
+            state.final_answer = _normalize_openended_text(state, llm, config)
+            state.parse_success = bool(state.final_answer)
+            state.artifacts[self.name] = {"final_answer": state.final_answer, "parse_success": state.parse_success}
+            return state
+
         selected = _preferred_seed_candidate(state) or state.selected_candidate
         if selected is None:
             selected = _best_available_artifact(state)
@@ -111,6 +125,95 @@ Return compact JSON only.
 
 def _is_verifier(name: str) -> bool:
     return any(marker in name for marker in ("verification", "check", "audit", "normalization"))
+
+
+def _is_openended_text_task(state: ElicitationState) -> bool:
+    return state.output_schema.get("type") in {"solution_text", "story_text", "code", "reconstruction_text"}
+
+
+def _normalize_openended_text(state: ElicitationState, llm: LLM, config: dict[str, Any]) -> str:
+    seed = _direct_seed_text(state)
+    if state.task_name == "neocoder":
+        return _clean_openended_text(seed or _best_raw_text_artifact(state) or "")
+
+    prompt = f"""You are the final TriSkill answer normalizer.
+
+Task: {state.task_name}
+Output type: {state.output_schema.get("type")}
+
+Original prompt:
+{state.original_prompt}
+
+Direct answer anchor:
+{seed or '(none)'}
+
+Workflow artifacts:
+{_compact_artifacts_for_normalization(state.artifacts)}
+
+Write the final benchmark answer only.
+Use the direct answer as the fidelity anchor, and incorporate workflow ideas only if they improve the answer without reducing correctness, coherence, feasibility, or constraint satisfaction.
+Do not output JSON or a Python dict unless the original prompt explicitly requires it.
+Do not mention TriSkill, workflow, artifacts, candidates, or scoring.
+Do not include hidden reasoning.
+"""
+    raw = llm.generate(prompt=prompt, temperature=0.0, max_tokens=int(config.get("max_final_tokens", 1200)))
+    text = _clean_openended_text(raw)
+    if _looks_degenerate_openended(text):
+        text = _clean_openended_text(seed or _best_raw_text_artifact(state) or raw)
+    if state.task_name == "neocoder":
+        return text
+    return normalize_text(text)
+
+
+def _direct_seed_text(state: ElicitationState) -> str:
+    for candidate in state.candidates:
+        if isinstance(candidate, dict) and candidate.get("source") == "direct_seed" and candidate.get("text"):
+            return str(candidate["text"])
+    seed = state.artifacts.get("direct_seed")
+    if isinstance(seed, dict):
+        for candidate in seed.get("candidates", []):
+            if isinstance(candidate, dict) and candidate.get("text"):
+                return str(candidate["text"])
+    return ""
+
+
+def _best_raw_text_artifact(state: ElicitationState) -> str:
+    for payload in reversed(list(state.artifacts.values())):
+        if isinstance(payload, dict):
+            selected = _selected_value(payload)
+            if isinstance(selected, str) and selected.strip():
+                return selected
+            raw = payload.get("raw_response")
+            if isinstance(raw, str) and raw.strip():
+                return raw
+            final = payload.get("final_answer")
+            if isinstance(final, str) and final.strip():
+                return final
+    return ""
+
+
+def _clean_openended_text(raw: str) -> str:
+    text = str(raw or "").strip()
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.IGNORECASE | re.DOTALL).strip()
+    match = re.search(r"<answer>(.*?)</answer>", text, flags=re.IGNORECASE | re.DOTALL)
+    if match:
+        text = match.group(1).strip()
+    text = re.sub(r"^```[a-zA-Z0-9_+-]*\s*", "", text)
+    text = re.sub(r"\s*```$", "", text).strip()
+    return text
+
+
+def _looks_degenerate_openended(text: str) -> bool:
+    stripped = str(text or "").strip()
+    if not stripped:
+        return True
+    if len(stripped.split()) < 8 and not stripped.startswith(("def ", "class ", "import ", "from ")):
+        return True
+    if stripped.startswith("{") and "'type':" in stripped[:120]:
+        return True
+    if stripped.count("<answer>") > 1:
+        return True
+    return False
 
 
 def _candidate_values(payload: Any) -> list[Any]:
@@ -296,6 +399,47 @@ def _clean_word(value: Any) -> str:
 
 def _default_diverse_words() -> list[str]:
     return list(DEFAULT_DIVERSE_WORDS)
+
+
+def _aut_uses_from_state(state: ElicitationState) -> list[str]:
+    uses: list[str] = []
+    seen: set[str] = set()
+
+    def add(value: Any) -> None:
+        text = str(value or "").strip()
+        if not text:
+            return
+        text = re.sub(r"\s+", " ", text)
+        key = text.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        uses.append(text)
+
+    for candidate in state.candidates:
+        if isinstance(candidate, dict):
+            if isinstance(candidate.get("uses"), list):
+                for item in candidate["uses"]:
+                    add(item)
+            for key in ("use", "candidate", "description", "text", "final_answer", "idea"):
+                if key in candidate:
+                    add(candidate[key])
+        else:
+            add(candidate)
+
+    for payload in state.artifacts.values():
+        if isinstance(payload, dict) and isinstance(payload.get("uses"), list):
+            for item in payload["uses"]:
+                add(item)
+        for candidate in _candidate_values(payload):
+            if isinstance(candidate, dict):
+                for key in ("use", "candidate", "description", "text", "final_answer", "idea"):
+                    if key in candidate:
+                        add(candidate[key])
+            else:
+                add(candidate)
+
+    return uses
 
 
 def _canonicalize_selection(state: ElicitationState, selected: Any) -> Any:
