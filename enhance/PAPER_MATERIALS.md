@@ -209,6 +209,27 @@ Configuration:
 - Judge config: local `llm_judge2` endpoint injected by `enhance/run_evalscope_with_judge.py`
 - Evalscope source: unchanged
 
+qwen3.5-9b focused iteration after strict output gates:
+
+| Task | Direct | TriSkill strict gates | Main interpretation |
+|---|---:|---:|---|
+| AUT fluency | 38.2 | 24.0 | Still below the direct multi-round AUT baseline, but recovered strongly from earlier placeholder-contaminated TriSkill runs (`7 -> 17 -> 24`). |
+| AUT originality | 59.77 | 53.49 | Near-direct originality after raw-use filtering; remaining loss is mostly lower fluency and applicability. |
+| CreativeMath novelty | 0.60 | 0.80 | Positive novelty shift while correctness and appropriateness remain `1.0`. |
+| CreativeMath originality | 0.48 | 0.62 | Positive originality shift, though fine-grained novel-unknown does not improve beyond direct in the strict-gate run. |
+| CS4 fluency/score | 0.32 | 0.44 | Main CS4 score improves, but story-quality and constraint-coverage metrics remain below direct. |
+| NeoCoder follow/fluency | 0.60 / 0.60 | 1.00 / 1.00 | Format and constraint-following improve, but correctness remains `0.0`; current code modality control is not enough for executable correctness. |
+
+Mechanistic note:
+
+```text
+Strict output gates improved the paper-useful hygiene of exploratory workflows:
+AUT no longer treats schema or planning text as uses, CS4 better extracts story
+drafts from planning shells, and NeoCoder distinguishes format following from
+actual executable correctness. The resulting profile shift is positive on
+CreativeMath novelty/originality and CS4 fluency, but not a uniform gain.
+```
+
 AUT with corrected output normalization:
 
 | Model | Main result |

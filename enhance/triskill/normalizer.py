@@ -111,7 +111,21 @@ def normalize_words(words: list[Any], final_count: int = 10) -> str:
 
 
 def normalize_uses(uses: list[Any]) -> str:
-    cleaned = [str(item).strip() for item in uses if str(item).strip()]
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for item in uses:
+        value = str(item).strip()
+        if not value:
+            continue
+        if re.fullmatch(r"use\s*\d+", value, flags=re.IGNORECASE):
+            continue
+        if value.lower() in PLACEHOLDER_WORDS:
+            continue
+        key = re.sub(r"\s+", " ", value).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(value)
     return answer_block(json.dumps({"uses": cleaned}, ensure_ascii=False, indent=2))
 
 

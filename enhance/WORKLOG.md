@@ -59,3 +59,17 @@
 - Artifacts: `outputs/exploration_validation/models2_aut_limit5_fulljudge2_autnorm_triskill_full/summary.json`; `outputs/exploration_validation/models2_exploration_rest_limit5_fulljudge2_openanchor_triskill_full/summary.json`; `outputs/transformation_validation/models2_transformation_limit5_fulljudge2_openanchor_triskill_full/summary.json`.
 - Error/fix: Initial open-ended workflow often treated non-JSON intermediate prose as final answers, hurting correctness/coherence. Fixed by adding an open-ended direct-answer fidelity anchor and a final synthesis normalizer that keeps workflow ideas only when they do not reduce correctness, coherence, feasibility, or constraint satisfaction.
 - Current status: Strongest new evidence is model-dependent: AUT fully improves on 1.5B; Transformation fully improves on 7B and 32B after openanchor. CreativeMath correctness improves on 1.5B, 7B, and 32B but novelty can fall. CS4 remains a failure case for this workflow, with flexibility/grammar sometimes improving but overall fluency/QUC/coherence usually dropping.
+
+## [2026-05-09 07:42:00 UTC] Add modality-aware exploratory finalization
+- Action: Added generic final-answer repair for exploratory open-ended modalities and raw-use recovery for list-style exploratory outputs.
+- Evidence: `PYTHONPATH=enhance python -m unittest discover -s enhance/tests -p 'test_*.py'` passed with 36 tests; `python -m py_compile enhance/triskill/*.py enhance/run_combination_validation.py enhance/run_evalscope_with_judge.py` passed.
+- Artifacts: `enhance/triskill/runtime_skills.py`, `enhance/triskill/executor.py`, `enhance/tests/test_triskill.py`; validation running at `outputs/exploration_validation/qwen35_9b_exploration_limit5_modal_finalizer_triskill_full`.
+- Error/fix: qwen3.5-9b often produced planning traces instead of finished stories/code and sometimes copied AUT schema placeholders. Fixed by output-schema gates: story/code only accept finished artifacts or invoke a final renderer; AUT recovers concise ideas from raw reasoning while rejecting schema/meta text.
+- Current status: qwen3.5-9b limit=5 validation is running for AUT, CreativeMath, CS4, and NeoCoder.
+
+## [2026-05-09 09:48:00 UTC] Strict exploratory output gates validation
+- Action: Tightened exploratory output gates without task-specific answer rules: AUT rejects meta/safety/schema text as uses, story extraction stops before review/planning tails, and code outputs require a real parsed `solve_lines` JSON object or real code.
+- Evidence: `PYTHONPATH=enhance python -m unittest discover -s enhance/tests -p 'test_*.py'` passed with 36 tests; `python -m py_compile enhance/triskill/*.py enhance/run_combination_validation.py enhance/run_evalscope_with_judge.py` passed. qwen3.5-9b `limit=5` run `qwen35_9b_exploration_limit5_strict_output_gates_triskill_full` completed.
+- Artifacts: `outputs/exploration_validation/qwen35_9b_exploration_limit5_strict_output_gates_triskill_full/summary.json`; `enhance/PAPER_MATERIALS.md` updated with qwen-focused paper notes.
+- Error/fix: The first raw AUT recovery pass extracted planning lines as uses and code completion accepted prose mentioning `solve_lines`; fixed by stricter use filters and parsed-code completeness checks.
+- Current status: qwen3.5-9b shows positive profile shifts on CreativeMath novelty/originality and CS4 fluency/score, near-direct AUT originality, but not full dominance. NeoCoder improves format following/fluency but not correctness.

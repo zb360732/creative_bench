@@ -151,6 +151,13 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn("doorstop", artifact["final_answer"])
         self.assertIn("garden marker", artifact["final_answer"])
 
+    def test_aut_normalization_filters_schema_placeholders(self):
+        output = normalize_selected("aut", {"uses": ["use 1", "use 2", "doorstop", "Doorstop"]})
+
+        self.assertNotIn("use 1", output)
+        self.assertNotIn("use 2", output)
+        self.assertIn("doorstop", output)
+
     def test_placeholder_words_are_rejected(self):
         output = normalize_selected("rat", {"word": "connecting_word"})
 
@@ -201,6 +208,60 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn("Shared network time", artifact["final_answer"])
         self.assertNotIn("'type':", artifact["final_answer"])
         self.assertIn("direct_seed", artifact["artifacts"])
+
+    def test_exploratory_openended_tasks_preserve_direct_anchor(self):
+        item = {"query": "Write a coherent constrained story."}
+        artifact = run_triskill("cs4", item, llm=ExploratoryAnchorLLM(), method="triskill_full")
+
+        self.assertIn("A complete coherent story", artifact["final_answer"])
+        self.assertNotIn("regressed rewrite", artifact["final_answer"])
+
+    def test_openended_normalization_extracts_finished_answer_body(self):
+        item = {"query": "Solve this in a novel way."}
+        artifact = run_triskill("creative_math", item, llm=FinishedBodyLLM(), method="triskill_full")
+
+        self.assertTrue(artifact["final_answer"].startswith("<answer>\nEvelyn opened the cafe door"))
+        self.assertNotIn("I need to plan", artifact["final_answer"])
+        self.assertNotIn("</think>", artifact["final_answer"])
+        self.assertNotIn("</thinking>", artifact["final_answer"])
+
+    def test_openended_normalization_rejects_planning_only_artifact(self):
+        item = {"query": "Write a coherent constrained story."}
+        artifact = run_triskill("cs4", item, llm=PlanningOnlyLLM(), method="triskill_full")
+
+        self.assertIn("A plain but complete seed story", artifact["final_answer"])
+        self.assertNotIn("Thinking Process", artifact["final_answer"])
+
+    def test_story_tasks_keep_direct_anchor_over_long_workflow_plan(self):
+        item = {"query": "Write a coherent constrained story."}
+        artifact = run_triskill("cs4", item, llm=LongPlanningStoryLLM(), method="triskill_full")
+
+        self.assertIn("A plain but complete seed story", artifact["final_answer"])
+        self.assertNotIn("Refining Constraint", artifact["final_answer"])
+
+    def test_story_tasks_extract_finished_draft_from_planning_shell(self):
+        item = {"query": "Write a coherent constrained story."}
+        artifact = run_triskill("cs4", item, llm=DraftShellStoryLLM(), method="triskill_full")
+
+        self.assertIn("Mara crossed the station", artifact["final_answer"])
+        self.assertNotIn("Review against constraints", artifact["final_answer"])
+        self.assertNotIn("Drafting Plan", artifact["final_answer"])
+
+    def test_code_tasks_finalize_unfinished_reasoning_anchor(self):
+        item = {"query": "Return JSON with think and solve_lines for a solve() function."}
+        artifact = run_triskill("neocoder", item, llm=CodeFinalizerLLM(), method="triskill_full")
+
+        self.assertIn('"solve_lines"', artifact["final_answer"])
+        self.assertIn("def solve():", artifact["final_answer"])
+        self.assertNotIn("Let me analyze", artifact["final_answer"])
+
+    def test_aut_extracts_real_ideas_from_raw_reasoning(self):
+        item = {"query": "List creative uses for a boot.", "item": "boot"}
+        artifact = run_triskill("aut", item, llm=AUTRawIdeasLLM(), method="triskill_full")
+
+        self.assertIn("Planter", artifact["final_answer"])
+        self.assertIn("Doorstop", artifact["final_answer"])
+        self.assertNotIn("use 1", artifact["final_answer"])
 
     def test_dat_normalization_filters_skill_names_and_fills(self):
         output = normalize_selected("dat", {"words": ["semantic_domain_expansion", "Whale"]})
@@ -385,6 +446,92 @@ class OpenEndedAnchorLLM:
         if "final triskill answer normalizer" in lower:
             return "{'type': 'reconstruction_text', 'bad': 'dict-shaped artifact'}"
         return "This is exploratory prose, not JSON."
+
+
+class ExploratoryAnchorLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return "A complete coherent story that satisfies the visible constraints from beginning to end."
+        if "final triskill answer normalizer" in lower:
+            return "regressed rewrite"
+        return "This exploratory artifact should not replace the anchor."
+
+
+class FinishedBodyLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return "A plain but complete seed story."
+        if "candidate_generation" in lower:
+            return (
+                "<answer>\n"
+                "I need to plan the story and list all constraints first.\n"
+                "</thinking>\n\n"
+                "Evelyn opened the cafe door, felt the room's grief as a pressure behind her ribs, "
+                "and still smiled at the stranger by the window.\n"
+                "</answer>"
+            )
+        return "{}"
+
+
+class PlanningOnlyLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return "A plain but complete seed story."
+        if "candidate_generation" in lower:
+            return (
+                "<answer>\nThinking Process:\n"
+                "1. Analyze the request.\n"
+                "2. Drafting Strategy: list constraints.\n"
+                "3. Constraint Conflict: reconcile details.\n"
+                "4. Refining Constraint 1 through 23.\n"
+                "</answer>"
+            )
+        return "{}"
+
+
+class LongPlanningStoryLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return "A plain but complete seed story."
+        if "candidate_generation" in lower:
+            return "Thinking Process:\\n" + "\\n".join(f"Refining Constraint {idx}: plan details." for idx in range(1, 30))
+        return "{}"
+
+
+class DraftShellStoryLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return (
+                "Drafting Plan:\n1. List constraints.\n\n"
+                "Drafting:\n"
+                "Mara crossed the station with a paper lantern in one hand and a lie on her tongue. "
+                "The delayed train gave her exactly enough time to apologize, forgive herself, and leave before dawn.\n\n"
+                "Review against constraints:\n1. Yes."
+            )
+        return "{}"
+
+
+class CodeFinalizerLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final-answer renderer" in lower:
+            return '{"think":"use stdin and print once","solve_lines":["def solve():","    print(1)"]}'
+        if "final answer anchor" in lower:
+            return "Let me analyze the programming problem first. The key insight is to produce code later."
+        return "{}"
+
+
+class AUTRawIdeasLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            return "Thinking Process:\nIdeas: Planter, Doorstop, Cable holder\n" + '{"uses":["use 1","use 2"]}'
+        return "{}"
 
 
 if __name__ == "__main__":
