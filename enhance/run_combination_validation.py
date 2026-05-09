@@ -15,6 +15,7 @@ import json
 import os
 import subprocess
 import sys
+from threading import Lock
 import time
 import urllib.error
 import urllib.request
@@ -239,7 +240,8 @@ def _generate_triskill_prediction_caches(
     method: str,
     tasks: tuple[str, ...],
 ) -> None:
-    jobs: list[tuple[dict[str, Any], str, str, str, Path, list[dict[str, Any]]]] = []
+    states: list[dict[str, Any]] = []
+    pending: list[tuple[dict[str, Any], int, dict[str, Any]]] = []
     for model in models:
         model_id = str(model.get("name") or model.get("model"))
         pred_dir = run_dir / model_id / "predictions" / model_id
@@ -251,33 +253,147 @@ def _generate_triskill_prediction_caches(
                 if _cache_is_complete(cache_path, expected_ids):
                     print(f"[SKIP] Existing TriSkill cache: {cache_path}")
                     continue
-                jobs.append((model, model_id, task, subset, cache_path, rows))
+                state = _cache_state(
+                    cache_path=cache_path,
+                    rows=rows,
+                    model_entry=model,
+                    model_id=model_id,
+                    task=task,
+                    subset=subset,
+                )
+                states.append(state)
+                pending.extend(
+                    (state, idx, record)
+                    for idx, record in enumerate(rows)
+                    if int(record.get("_sample_id", idx)) not in state["existing_by_id"]
+                )
 
-    if not jobs:
+    if not pending:
         return
 
-    workers = max(1, min(max_parallel, len(jobs)))
-    per_job_parallel = max(1, max_parallel // workers)
+    workers = max(1, min(max_parallel, len(pending)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [
             pool.submit(
-                _write_task_cache,
-                cache_path=cache_path,
-                task=task,
-                subset=subset,
-                records=rows,
-                model_entry=model,
-                model_id=model_id,
+                _build_and_append_cache_row,
+                state=state,
+                idx=idx,
+                record=record,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 request_timeout=request_timeout,
-                max_parallel=per_job_parallel,
                 method=method,
             )
-            for model, model_id, task, subset, cache_path, rows in jobs
+            for state, idx, record in pending
         ]
         for future in as_completed(futures):
             future.result()
+
+    for state in states:
+        _finalize_cache_state(state)
+
+
+def _cache_state(
+    cache_path: Path,
+    rows: list[dict[str, Any]],
+    model_entry: dict[str, Any],
+    model_id: str,
+    task: str,
+    subset: str,
+) -> dict[str, Any]:
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    existing_rows = _dedupe_rows(_read_jsonl(cache_path))
+    return {
+        "cache_path": cache_path,
+        "json_path": cache_path.with_suffix(".json"),
+        "rows": rows,
+        "expected_ids": _expected_row_ids(rows),
+        "existing_by_id": {_row_id(row): row for row in existing_rows},
+        "model_entry": model_entry,
+        "model_id": model_id,
+        "task": task,
+        "subset": subset,
+        "lock": Lock(),
+    }
+
+
+def _build_and_append_cache_row(
+    state: dict[str, Any],
+    idx: int,
+    record: dict[str, Any],
+    temperature: float,
+    max_tokens: int,
+    request_timeout: float,
+    method: str,
+) -> None:
+    row = _build_prediction_cache_row(
+        idx=idx,
+        record=record,
+        task=state["task"],
+        model_entry=state["model_entry"],
+        model_id=state["model_id"],
+        temperature=temperature,
+        max_tokens=max_tokens,
+        request_timeout=request_timeout,
+        method=method,
+    )
+    sample_id = _row_id(row)
+    with state["lock"]:
+        state["existing_by_id"][sample_id] = row
+        with state["cache_path"].open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+            handle.flush()
+    print(f"[DONE] {state['model_id']} {state['task']} {idx + 1}/{len(state['rows'])}")
+
+
+def _finalize_cache_state(state: dict[str, Any]) -> None:
+    existing_by_id = state["existing_by_id"]
+    ordered_rows = [existing_by_id[row_id] for row_id in state["expected_ids"] if row_id in existing_by_id]
+    _rewrite_jsonl(state["cache_path"], ordered_rows)
+    state["json_path"].write_text(json.dumps(ordered_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _build_prediction_cache_row(
+    idx: int,
+    record: dict[str, Any],
+    task: str,
+    model_entry: dict[str, Any],
+    model_id: str,
+    temperature: float,
+    max_tokens: int,
+    request_timeout: float,
+    method: str,
+) -> dict[str, Any]:
+    sample_id = int(record.get("_sample_id", idx))
+    if method == "triskill_full":
+        content, artifact = _run_full_workflow(
+            task=task,
+            record=record,
+            model_entry=model_entry,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            request_timeout=request_timeout,
+        )
+        metadata = {**_metadata(task, record, method=method), "artifact": artifact}
+    else:
+        base_prompt = _adapter_prompt(task, record)
+        prompt = _final_prompt(task, enhance_prompt(base_prompt, task))
+        content = _chat_completion(
+            model_entry=model_entry,
+            prompt=prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            timeout=request_timeout,
+        )
+        metadata = _metadata(task, record, method=method)
+    return _cache_row(
+        idx=sample_id,
+        model_name=str(model_entry.get("model") or model_id),
+        model_id=model_id,
+        content=content,
+        metadata=metadata,
+        method=method,
+    )
 
 
 def _load_task_splits(task: str, limit: int | None) -> list[tuple[str, list[dict[str, Any]]]]:
@@ -833,7 +949,10 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
             if line.strip():
-                rows.append(json.loads(line))
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    print(f"[WARN] Ignoring malformed JSONL row while resuming: {path}")
     return rows
 
 

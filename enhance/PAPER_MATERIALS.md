@@ -230,6 +230,30 @@ actual executable correctness. The resulting profile shift is positive on
 CreativeMath novelty/originality and CS4 fluency, but not a uniform gain.
 ```
 
+Full qwen3.5-9b exploratory comparison after strict output gates:
+
+| Task | Metric view | Direct | TriSkill full | Delta | Paper interpretation |
+|---|---|---:|---:|---:|---|
+| AUT | main score / fluency | 37.3288 | 10.8493 | -26.4795 | Negative full-run result; the workflow over-constrains list generation and loses fluency/diversity despite stronger applicability. |
+| AUT | applicability | 0.7532 | 3.0285 | +2.2753 | The generated uses are judged more applicable when present, but there are too few valid/diverse uses. |
+| CreativeMath | main score / correctness | 0.6793 | 0.8860 | +0.2067 | Strongest full-run exploratory gain; fidelity anchoring improves correctness and appropriateness. |
+| CreativeMath | novelty | 0.3504 | 0.2810 | -0.0694 | Correctness gain trades off against novelty/originality. |
+| CS4 | main score / fluency | 0.3760 | 0.3927 | +0.0167 | Small main-score gain only; not enough to claim broad story-quality improvement. |
+| CS4 | quality metrics | mixed | lower | negative | Grammar, coherence, likability, flexibility, appropriateness, novelty, and QUC all drop. |
+| NeoCoder | follow / fluency | 0.8040 | 0.8802 | +0.0762 | Formatting and constraint-following improve. |
+| NeoCoder | correctness / score | 0.1198 | 0.0687 | -0.0511 | Correctness loss dominates; code generation needs stronger executable validation. |
+
+Full-run conclusion:
+
+```text
+For qwen3.5-9b exploratory tasks, TriSkill should be reported as a profile
+shift rather than a general improvement method. It improves CreativeMath
+correctness/appropriateness and slightly improves CS4's main fluency score, but
+it currently hurts AUT divergent output volume/diversity and NeoCoder executable
+correctness. This result is useful because it identifies the boundary between
+creative search pressure and final-answer quality preservation.
+```
+
 AUT with corrected output normalization:
 
 | Model | Main result |
@@ -429,10 +453,12 @@ Observed runtime issue and fix:
 
 ```text
 During full validation, `--max-parallel 64` did not translate to 64 backend
-running requests because the scheduler divided parallelism across all jobs,
-including already completed caches. The validation driver was patched to skip
-complete caches before allocating workers, so resume runs allocate parallelism
-only to incomplete jobs.
+running requests because the scheduler originally divided parallelism across
+task-level cache jobs. Resume runs with only one incomplete cache could still
+underuse the backend, and partially complete caches made the observed running
+count much smaller than requested. The validation driver now builds a global
+queue of unfinished sample rows and appends rows under per-cache locks, so
+`--max-parallel 64` is spent on unfinished samples rather than task containers.
 ```
 
 Commit:
