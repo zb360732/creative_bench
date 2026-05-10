@@ -27,6 +27,7 @@ class OpenAICompatibleLLM:
     timeout: int = 120
     retries: int = 2
     retry_interval: float = 5.0
+    disable_thinking: bool = True
 
     @classmethod
     def from_env(cls) -> "OpenAICompatibleLLM":
@@ -44,6 +45,8 @@ class OpenAICompatibleLLM:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if self.disable_thinking:
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             self.api_url.rstrip("/") + "/chat/completions",

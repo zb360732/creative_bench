@@ -274,6 +274,7 @@ class TriSkillTest(unittest.TestCase):
         client = OpenAICompatibleLLM(api_url="https://example.invalid/v1", model="m", retries=3, retry_interval=0)
 
         self.assertEqual(client.retries, 3)
+        self.assertTrue(client.disable_thinking)
 
     def test_runner_prompt_only_and_without_verifier(self):
         with tempfile.TemporaryDirectory() as tmp:

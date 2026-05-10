@@ -795,6 +795,7 @@ def _run_full_workflow(
         model=str(_resolve_env(model_entry.get("model"))),
         api_key=_resolve_api_key(model_entry),
         timeout=int(request_timeout),
+        disable_thinking=True,
     )
     start = time.time()
     artifact = run_triskill(task, item, llm=llm, method="triskill_full")
@@ -803,6 +804,7 @@ def _run_full_workflow(
         "temperature": temperature,
         "max_tokens": max_tokens,
         "request_timeout": request_timeout,
+        "chat_template_kwargs": {"enable_thinking": False},
     }
     artifact["safe_item"] = dict(artifact.get("safe_item") or {})
     artifact["safe_item"]["query"] = _adapter_prompt(task, record)
@@ -886,6 +888,7 @@ def _chat_completion(
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
         "max_tokens": max_tokens,
+        "chat_template_kwargs": {"enable_thinking": False},
     }
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(

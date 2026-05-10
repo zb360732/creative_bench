@@ -80,3 +80,10 @@
 - Artifacts: `outputs/exploration_validation/qwen35_9b_exploration_full_strict_output_gates_direct/summary.json`; `outputs/exploration_validation/qwen35_9b_exploration_full_strict_output_gates_global_sched_triskill_full/summary.json`; `enhance/run_combination_validation.py`.
 - Error/fix: Previous resume scheduling could leave only a handful of backend requests running because parallelism was split across task-level jobs. Fixed by building one pending queue of unfinished sample rows and appending rows under per-cache locks, then rewriting ordered JSONL/JSON caches after completion.
 - Current status: Full qwen3.5-9b exploratory evidence is mixed, not uniformly positive. It supports a narrow claim of profile shift and CreativeMath/CS4 main-score gains, while exposing AUT fluency/diversity collapse and NeoCoder correctness loss as current bottlenecks.
+
+## [2026-05-10 00:00:00 UTC] Align enhance request parameters with evalscope thinking mode
+- Action: Set TriSkill's OpenAI-compatible client to disable model thinking by default and added `chat_template_kwargs.enable_thinking=false` to the validation driver's direct HTTP chat-completions requests.
+- Evidence: Matches evalscope's Qwen3 request behavior, where `extra_body.chat_template_kwargs.enable_thinking` is set to `false` before generation.
+- Artifacts: `enhance/triskill/llm.py`, `enhance/run_combination_validation.py`, `enhance/tests/test_triskill.py`.
+- Error/fix: Prior TriSkill workflow only disabled visible thinking for a subset of tasks, and direct cache generation did not pass the flag at all. This made direct vs TriSkill comparisons inconsistent for qwen3-style thinking models.
+- Current status: Request-parameter alignment validated with unit tests, py_compile, and whitespace diff checks.
