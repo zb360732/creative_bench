@@ -30,3 +30,10 @@ remaining risks. It is separate from implementation logs under `enhance/`.
 - Artifacts: `paper/CLAIM_MATRIX.md`.
 - Error/fix: None.
 - Current status: Paper claims now have a gating document. Next step is Stage 1 related-work review or Stage 2 formalism, depending on whether we want to lock conceptual framing or notation first.
+
+## [2026-05-11 18:39:13 UTC] Draft formalism
+- Action: Added a formalism document defining task instances, visible/hidden information, leakage-free elicitation, creativity levels, canonical objective mapping, task profiles, operators, workflows, elicitation methods, runtime artifacts, and creativity profile shift.
+- Evidence: `paper/FORMALISM.md` includes a notation table, ten definitions, component classification, result interpretation rules, and draft-ready paragraphs for the problem setup, TriSkill overview, and profile shift.
+- Artifacts: `paper/FORMALISM.md`.
+- Error/fix: None.
+- Current status: Stage 2 now has a first-pass formal definition layer. Remaining tasks are citations for the taxonomy and exact evaluator/judge notation.
