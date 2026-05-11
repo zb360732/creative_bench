@@ -23,3 +23,10 @@ remaining risks. It is separate from implementation logs under `enhance/`.
 - Artifacts: `paper/EVIDENCE_LEDGER.md`.
 - Error/fix: `jq` was unavailable in the environment, so JSON was inspected with one-off read-only Python commands; paper files were still written via `apply_patch`.
 - Current status: Stage 0 has a first-pass ledger. Next step is to turn this into table-generation scripts or a stricter `CLAIM_MATRIX.md`.
+
+## [2026-05-11 18:31:25 UTC] Create claim matrix
+- Action: Created a claim matrix that maps candidate paper claims to evidence status, manuscript placement, risk controls, and required follow-up experiments.
+- Evidence: `paper/CLAIM_MATRIX.md` separates core positioning, method, main empirical, boundary/negative, and forbidden claims. It explicitly blocks universal-improvement, fully task-agnostic, closed-source TriSkill validation, replay-as-final, and incomparable transformation claims.
+- Artifacts: `paper/CLAIM_MATRIX.md`.
+- Error/fix: None.
+- Current status: Paper claims now have a gating document. Next step is Stage 1 related-work review or Stage 2 formalism, depending on whether we want to lock conceptual framing or notation first.
