@@ -37,3 +37,10 @@ remaining risks. It is separate from implementation logs under `enhance/`.
 - Artifacts: `paper/FORMALISM.md`.
 - Error/fix: None.
 - Current status: Stage 2 now has a first-pass formal definition layer. Remaining tasks are citations for the taxonomy and exact evaluator/judge notation.
+
+## [2026-05-11 18:59:57 UTC] Prepare fresh-session handoff
+- Action: Created a handoff document for continuing the paper work in a new Codex session after context pressure.
+- Evidence: `paper/NEXT_CODEX_HANDOFF.md` summarizes branch state, dirty files not to touch, completed paper artifacts, current claim boundaries, and the next Stage 1 research task with required literature buckets.
+- Artifacts: `paper/NEXT_CODEX_HANDOFF.md`.
+- Error/fix: The previous context was approaching model-window limits during literature search, so the handoff captures the exact next task before continuing.
+- Current status: New sessions can continue by reading `paper/NEXT_CODEX_HANDOFF.md` first.
