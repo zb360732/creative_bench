@@ -16,3 +16,10 @@ remaining risks. It is separate from implementation logs under `enhance/`.
 - Artifacts: `paper/PAPER_WORKFLOW.md`, `paper/WORKLOG.md`.
 - Error/fix: None.
 - Current status: Ready to start Stage 0 evidence inventory before drafting manuscript text.
+
+## [2026-05-11 18:26:47 UTC] Create evidence ledger
+- Action: Scanned local `outputs/**/summary.json` files and the merged direct baseline under `huizong/merged_evalscope`, then created the first paper evidence ledger.
+- Evidence: The ledger records full combinational exact-metric direct vs TriSkill runs, qwen3.5-9b merged direct baseline vs current full TriSkill, latest DAT/BATS diagnostics, exploratory full/limit20 diagnostics, transformation limit5 diagnostics, rejected iterations, and current evidence gaps.
+- Artifacts: `paper/EVIDENCE_LEDGER.md`.
+- Error/fix: `jq` was unavailable in the environment, so JSON was inspected with one-off read-only Python commands; paper files were still written via `apply_patch`.
+- Current status: Stage 0 has a first-pass ledger. Next step is to turn this into table-generation scripts or a stricter `CLAIM_MATRIX.md`.
