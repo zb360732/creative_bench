@@ -182,6 +182,8 @@ def _direct_seed(task_name: str, prompt: str, llm: LLM, config: dict[str, Any]) 
         )
         parsed = parse_json_lenient(raw)
         sample_candidates = _seed_candidates_from_value(task, parsed if parsed is not None else raw)
+        if task == "aut" and not _aut_seed_has_real_uses(sample_candidates):
+            sample_candidates = _seed_candidates_from_value(task, raw)
         for candidate in sample_candidates:
             candidate["source"] = "direct_seed"
             candidate["seed_sample"] = sample_index
@@ -206,22 +208,35 @@ def _openended_direct_seed(task_name: str, prompt: str, llm: LLM, config: dict[s
     the final normalizer a reliable anchor without using hidden scoring fields.
     """
 
-    seed_prompt = _openended_seed_prompt(task_name, prompt)
-    raw = llm.generate(
-        prompt=seed_prompt,
-        temperature=float(config.get("direct_seed_temperature", 0.0)),
-        max_tokens=int(config.get("direct_seed_max_tokens", config.get("max_final_tokens", 1200))),
-    )
-    text = _clean_openended_seed(raw)
+    sample_count = max(1, int(config.get("direct_seed_samples", 1)))
+    sample_temperatures = _seed_temperatures(config, sample_count)
+    samples: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    for sample_index, temperature in enumerate(sample_temperatures, start=1):
+        seed_prompt = _openended_seed_prompt(task_name, prompt, sample_index, sample_count)
+        raw = llm.generate(
+            prompt=seed_prompt,
+            temperature=temperature,
+            max_tokens=int(config.get("direct_seed_max_tokens", config.get("max_final_tokens", 1200))),
+        )
+        text = _clean_openended_seed(raw)
+        samples.append({"sample": sample_index, "temperature": temperature, "raw_response": raw[:2000]})
+        candidates.append({"source": "direct_seed", "seed_sample": sample_index, "text": text})
     return {
-        "num_calls": 1,
-        "samples": [{"sample": 1, "temperature": float(config.get("direct_seed_temperature", 0.0)), "raw_response": raw[:2000]}],
-        "candidates": [{"source": "direct_seed", "text": text}],
+        "num_calls": len(samples),
+        "samples": samples,
+        "candidates": candidates,
     }
 
 
-def _openended_seed_prompt(task_name: str, prompt: str) -> str:
+def _openended_seed_prompt(task_name: str, prompt: str, sample_index: int = 1, sample_count: int = 1) -> str:
     task = task_name.lower()
+    diversity_note = ""
+    if sample_count > 1:
+        diversity_note = (
+            f"\nThis is independent direct attempt {sample_index} of {sample_count}. "
+            "Use the same visible prompt, but re-check constraints and edge cases independently before returning."
+        )
     if task == "creative_math":
         guidance = (
             "Give one complete, correct, self-contained mathematical solution. "
@@ -233,7 +248,15 @@ def _openended_seed_prompt(task_name: str, prompt: str) -> str:
             "Preserve grammar, causal flow, and ending coherence."
         )
     elif task == "neocoder":
-        guidance = "Write the final code or exact benchmark-required programming answer. Do not add explanatory prose unless the prompt requires it."
+        forbidden_note = _neocoder_forbidden_note(prompt)
+        guidance = (
+            "Write the exact benchmark-required programming answer. "
+            "If visible sample input/output is provided, mentally execute the code and repair it before returning. "
+            "Audit the final code against every visible Programming constraints section; if a technique is forbidden, use a different generic control or data pattern. "
+            "Do not call solve(); the evaluator will call it. "
+            "Do not add explanatory prose unless the prompt requires it."
+            f"{forbidden_note}"
+        )
     elif task == "transformation":
         guidance = (
             "Write one complete reconstruction plan that rebuilds the system under the changed rules, "
@@ -245,8 +268,86 @@ def _openended_seed_prompt(task_name: str, prompt: str) -> str:
 
 Final answer anchor:
 {guidance}
+{diversity_note}
 Return only the final answer. Do not output JSON unless the original prompt explicitly requires JSON. Do not describe this workflow.
 """.strip()
+
+
+def _neocoder_forbidden_note(prompt: str) -> str:
+    terms = _extract_prompt_forbidden_code_terms(prompt)
+    if not terms:
+        return ""
+    hints: list[str] = []
+    if "for loop" in terms:
+        hints.append("avoid `for ... in ...`, comprehensions, and generator expressions; use while, recursion, map/filter, or indexed expressions if allowed")
+    if "while loop" in terms:
+        hints.append("avoid `while`; use recursion, comprehensions/map, or closed-form expressions if allowed")
+    if "if statement" in terms:
+        hints.append("avoid `if` and ternary expressions; use boolean arithmetic, list/dict indexing, exceptions, or short-circuit expressions if allowed")
+    if "sorting" in terms:
+        hints.append("avoid sorted()/list.sort(); use counting, scans, min/max updates, or problem-specific ordering already present in the input")
+    if "dictionary" in terms or "hashmap" in terms:
+        hints.append("avoid dict/hashmap literals and constructors; use arrays, lists of pairs, counters by index, or scans if allowed")
+    if "set" in terms:
+        hints.append("avoid set literals and set(); use lists, boolean arrays, or scans if allowed")
+    if "tuple" in terms:
+        hints.append("avoid tuple literals/unpacking where possible; use lists or scalar variables")
+    if "break statement" in terms:
+        hints.append("avoid break; use loop conditions or flags if loops are allowed")
+    if "continue statement" in terms:
+        hints.append("avoid continue; restructure branches or use guarded statements")
+    if "recursion" in terms:
+        hints.append("avoid recursive functions; use iteration or closed forms if allowed")
+    rendered_terms = ", ".join(terms)
+    rendered_hints = "; ".join(hints)
+    return (
+        f"\nVisible forbidden techniques parsed from the prompt: {rendered_terms}. "
+        f"Generic alternatives: {rendered_hints}."
+    )
+
+
+def _extract_prompt_forbidden_code_terms(prompt: str) -> list[str]:
+    lowered = str(prompt or "").lower()
+    texts: list[str] = []
+    marker = re.search(r"programming constraints?\s*:\s*(?:do not use[^\n]*\n)?", lowered)
+    if marker:
+        tail = lowered[marker.end() :]
+        lines: list[str] = []
+        for line in tail.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                if lines:
+                    break
+                continue
+            if stripped.startswith(("-", "*", "•")):
+                lines.append(stripped)
+                continue
+            if lines:
+                break
+            lines.append(stripped)
+        texts.append("\n".join(lines))
+    texts.extend(re.findall(r"(?:do not use|don't use|without using|without|avoid|forbidden|prohibited)\s+([^.\n;]+)", lowered))
+    patterns = {
+        "for loop": r"\bfor\s+loops?\b|\bfor\s+statement\b",
+        "while loop": r"\bwhile\s+loops?\b|\bwhile\s+statement\b",
+        "recursion": r"\brecursion\b|\brecursive\b",
+        "sorting": r"\bsorting\b|\bsorted\s*\(|\.sort\s*\(",
+        "stack": r"\bstacks?\b",
+        "queue": r"\bqueues?\b",
+        "dictionary": r"\bdictionaries\b|\bdictionary\b|\bdicts?\b",
+        "hashmap": r"\bhash\s*maps?\b|\bhashmaps?\b",
+        "if statement": r"\bif\s+statements?\b|\bif\s+expression\b",
+        "continue statement": r"\bcontinue\s+statements?\b",
+        "break statement": r"\bbreak\s+statements?\b",
+        "tuple": r"\btuples?\b",
+        "set": r"\bsets?\b",
+    }
+    found: set[str] = set()
+    joined = "\n".join(texts)
+    for term, pattern in patterns.items():
+        if re.search(pattern, joined):
+            found.add(term)
+    return sorted(found)
 
 
 def _clean_openended_seed(raw: str) -> str:
@@ -339,7 +440,10 @@ def _seed_candidates_from_value(task: str, value: Any) -> list[dict[str, Any]]:
     if task == "aut":
         uses: list[str] = []
         if isinstance(value, dict) and isinstance(value.get("uses"), list):
-            uses = [str(item).strip() for item in value["uses"] if str(item).strip()]
+            uses = [_clean_seed_use(item) for item in value["uses"]]
+        elif isinstance(value, str):
+            uses = _extract_seed_uses(value)
+        uses = [item for item in uses if item]
         return [{"uses": uses, "source": "direct_seed"}] if uses else []
     field = "target" if task == "bats" else "word"
     word = ""
@@ -353,6 +457,42 @@ def _seed_candidates_from_value(task: str, value: Any) -> list[dict[str, Any]]:
         word = _extract_seed_single_word(str(value))
     return [{field: word, "source": "direct_seed"}] if word else []
 
+
+
+def _aut_seed_has_real_uses(candidates: list[dict[str, Any]]) -> bool:
+    for candidate in candidates:
+        if isinstance(candidate.get("uses"), list) and any(_clean_seed_use(item) for item in candidate["uses"]):
+            return True
+    return False
+
+
+def _extract_seed_uses(text: str) -> list[str]:
+    source = str(text or "")
+    uses: list[str] = []
+    for match in re.findall(r"\bIdeas?\s*:\s*([^\n]+)", source, flags=re.IGNORECASE):
+        uses.extend(_clean_seed_use(part) for part in re.split(r"[,;]", match))
+    answer_match = re.search(r"<answer>\s*(.*?)\s*</answer>", source, flags=re.IGNORECASE | re.DOTALL)
+    if answer_match:
+        parsed = parse_json_lenient(answer_match.group(1))
+        if isinstance(parsed, dict) and isinstance(parsed.get("uses"), list):
+            uses.extend(_clean_seed_use(item) for item in parsed["uses"])
+    return [item for item in uses if item]
+
+
+def _clean_seed_use(value: Any) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" -*\t\r\n")
+    if not text:
+        return ""
+    lowered = text.lower()
+    if re.fullmatch(r"use\s*\d+", text, flags=re.IGNORECASE):
+        return ""
+    if lowered in PLACEHOLDER_WORDS:
+        return ""
+    if any(marker in lowered for marker in ("thinking process", "schema", "json", "prompt asks", "output format", "constraint")):
+        return ""
+    if len(text.split()) > 18:
+        return ""
+    return text
 
 def _extract_seed_single_word(text: str) -> str:
     patterns = (

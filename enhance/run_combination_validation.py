@@ -57,11 +57,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--limit",
         type=_parse_limit,
-        default=50,
+        default=20,
         help="Max samples per task. Use none/null/full/all for the full dataset.",
     )
     parser.add_argument("--work-dir", default=str(ROOT / "outputs/combination_validation"))
-    parser.add_argument("--run-name", default="models2_combination_limit50")
+    parser.add_argument("--run-name", default="models2_combination_limit20")
     parser.add_argument("--max-tokens", type=int, default=2048)
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--request-timeout", type=float, default=180)

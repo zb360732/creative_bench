@@ -134,7 +134,7 @@ TASK_PROFILE_CONFIGS: dict[str, dict[str, Any]] = {
         "canonical_metric_weights": {"fluency": "high", "flexibility": "high", "novelty": "high", "elaboration": "medium", "appropriateness": "high", "format_validity": "high"},
         "output_schema_spec": {"type": "json", "required_fields": ["uses"]},
         "skills": ["constraint_space_mapping", "candidate_generation", "coverage_balancing", "novelty_transformation", "semantic_deduplication", "feasibility_evaluation", "output_normalization"],
-        "budgets": {"candidate_count": 60, "final_count": None, "generation_temperature": 0.9, "verification_temperature": 0.0, "direct_seed_max_tokens": 1600, "direct_seed_samples": 1},
+        "budgets": {"candidate_count": 60, "final_count": None, "generation_temperature": 0.9, "verification_temperature": 0.0, "direct_seed_max_tokens": 4096, "direct_seed_samples": 1, "max_final_tokens": 4096, "aut_min_final_uses": 24, "aut_max_final_uses": 64},
     },
     "creative_math": {
         "raw_metrics": ["fluency", "novelty", "flexibility", "appropriateness", "correctness"],
@@ -155,7 +155,7 @@ TASK_PROFILE_CONFIGS: dict[str, dict[str, Any]] = {
         "canonical_metric_weights": {"execution_validity": "high", "correctness": "high", "appropriateness": "high", "novelty": "medium", "flexibility": "medium", "format_validity": "high"},
         "output_schema_spec": {"type": "code"},
         "skills": ["constraint_space_mapping", "exploration_axis_expansion", "candidate_generation", "execution_verification", "portfolio_selection", "output_normalization"],
-        "budgets": {"strategy_count": 4, "candidates_per_strategy": 1, "generation_temperature": 0.7, "verification_temperature": 0.0, "direct_seed_max_tokens": 2048, "max_final_tokens": 2048, "default_max_json_tokens": 1536},
+        "budgets": {"strategy_count": 4, "candidates_per_strategy": 1, "generation_temperature": 0.7, "verification_temperature": 0.0, "direct_seed_max_tokens": 4096, "direct_seed_samples": 3, "direct_seed_temperature_spread": [0.0, 0.2, 0.4], "max_final_tokens": 4096, "default_max_json_tokens": 2048},
     },
     "transformation": {
         "raw_metrics": ["judge_score", "rebuild_core_mechanism", "restore_key_performance", "establish_new_norm"],

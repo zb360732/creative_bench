@@ -9,10 +9,12 @@ from triskill.dataset import enhance_dataset_file
 from triskill.diagnostics import diagnose_transformation
 from triskill.evalscope_bridge import artifacts_to_predictions
 from triskill.execution_hooks import verify_math_solution, verify_python_code
-from triskill.executor import _direct_seed, run_triskill
+from triskill.executor import _direct_seed, _openended_seed_prompt, run_triskill
 from triskill.llm import OpenAICompatibleLLM, parse_json_lenient
 from triskill.paper_pipeline import audit_artifacts, create_experiment_manifest, join_scores, write_scored_summary
 from triskill.runner import run_dataset
+from triskill.runtime_skills import _extract_forbidden_code_terms
+from triskill.state import ElicitationState
 
 
 class TriSkillTest(unittest.TestCase):
@@ -255,6 +257,198 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn("def solve():", artifact["final_answer"])
         self.assertNotIn("Let me analyze", artifact["final_answer"])
 
+    def test_code_tasks_select_candidate_that_passes_visible_example(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Input\nOne integer n.\nOutput\nPrint twice n.\n"
+                "Example\nInput\n2\nOutput\n4"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeExampleSelectionLLM(), method="triskill_full")
+
+        self.assertIn("n * 2", artifact["final_answer"])
+        self.assertNotIn("print(0)", artifact["final_answer"])
+
+    def test_code_tasks_reject_top_level_solve_call(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function. Do not call solve().\n"
+                "Example\nInput\n3\nOutput\n3"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeTopLevelCallLLM(), method="triskill_full")
+
+        self.assertIn("print(input())", artifact["final_answer"])
+        self.assertNotIn('solve()"]', artifact["final_answer"])
+
+    def test_code_tasks_apply_generic_forbidden_technique_filter(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Example\nInput\n3\nOutput\n3"
+            ),
+            "constraints": ["for loop"],
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeConstraintSelectionLLM(), method="triskill_full")
+
+        self.assertIn("while i < n", artifact["final_answer"])
+        self.assertNotIn("for _ in range", artifact["final_answer"])
+
+    def test_code_tasks_reject_if_statement_constraint(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Example\nInput\n3\nOutput\n3"
+            ),
+            "constraints": ["if statement"],
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeIfConstraintSelectionLLM(), method="triskill_full")
+
+        self.assertIn("print(input())", artifact["final_answer"])
+        self.assertNotIn('"    if n > 0:"', artifact["final_answer"])
+
+    def test_code_tasks_treat_map_as_for_loop_under_visible_constraint(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Programming constraints: DO NOT use the following techniques\n"
+                "- for loop\n"
+                "Example\nInput\n3\nOutput\n3"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeMapConstraintSelectionLLM(), method="triskill_full")
+
+        self.assertIn("print(input())", artifact["final_answer"])
+        self.assertNotIn("map(", artifact["final_answer"])
+
+    def test_code_tasks_parse_forbidden_techniques_from_prompt(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Programming constraints: DO NOT use the following techniques\n"
+                "- if statement\n"
+                "Example\nInput\n3\nOutput\n3"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeIfConstraintSelectionLLM(), method="triskill_full")
+
+        self.assertIn("print(input())", artifact["final_answer"])
+        self.assertNotIn('"    if n > 0:"', artifact["final_answer"])
+
+    def test_code_constraint_parser_ignores_problem_text_words(self):
+        state = ElicitationState(
+            task_name="neocoder",
+            item_id="x",
+            raw_item={"query": "The first line contains the number of test cases. Return JSON with solve_lines."},
+            original_prompt="The first line contains the number of test cases. Return JSON with solve_lines.",
+            level="exploratory",
+            workflow="exploratory",
+        )
+
+        self.assertEqual(_extract_forbidden_code_terms(state), set())
+
+    def test_code_constraint_parser_reads_constraint_block_bullets(self):
+        state = ElicitationState(
+            task_name="neocoder",
+            item_id="x",
+            raw_item={"query": "Return JSON with solve_lines."},
+            original_prompt=(
+                "Return JSON with solve_lines.\n"
+                "Programming constraints: DO NOT use the following techniques\n"
+                "- for loop\n"
+                "- set\n"
+                "Problem statement starts here with ordinary text."
+            ),
+            level="exploratory",
+            workflow="exploratory",
+        )
+
+        self.assertEqual(_extract_forbidden_code_terms(state), {"for loop", "set"})
+
+    def test_code_tasks_strip_comments_and_main_guard(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function. Do not call solve(). Do not include comments.\n"
+                "Example\nInput\n3\nOutput\n3"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeMainGuardCommentLLM(), method="triskill_full")
+
+        self.assertIn("print(input())", artifact["final_answer"])
+        self.assertNotIn("#", artifact["final_answer"])
+        self.assertNotIn("__main__", artifact["final_answer"])
+        self.assertNotIn('solve()"]', artifact["final_answer"])
+
+    def test_code_tasks_repair_when_all_candidates_fail_visible_example(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Input\nOne integer n.\nOutput\nPrint n plus one.\n"
+                "Example\nInput\n4\nOutput\n5"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeRepairLLM(), method="triskill_full")
+
+        self.assertIn("n + 1", artifact["final_answer"])
+        self.assertNotIn("print(0)", artifact["final_answer"])
+
+    def test_code_tasks_do_not_accept_constraint_violating_repair_over_clean_candidate(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Programming constraints: DO NOT use the following techniques\n"
+                "- for loop\n"
+                "Input\nOne integer n.\nOutput\nPrint n.\n"
+                "Example\nInput\n4\nOutput\n4"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeViolatingRepairLLM(), method="triskill_full")
+
+        self.assertIn("print(0)", artifact["final_answer"])
+        self.assertNotIn("for _ in range", artifact["final_answer"])
+
+    def test_code_tasks_apply_constraint_preserving_final_rewrite(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Programming constraints: DO NOT use the following techniques\n"
+                "- for loop\n"
+                "Input\nOne integer n.\nOutput\nPrint n.\n"
+                "Example\nInput\n4\nOutput\n4"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeConstraintRewriteLLM(), method="triskill_full")
+
+        self.assertIn("while i < n", artifact["final_answer"])
+        self.assertNotIn("for _ in range", artifact["final_answer"])
+
+    def test_code_tasks_keep_direct_anchor_when_no_candidate_passes_example(self):
+        item = {
+            "query": (
+                "Return JSON with solve_lines for a solve() function.\n"
+                "Example\nInput\n2\nOutput\n5"
+            )
+        }
+        artifact = run_triskill("neocoder", item, llm=CodeDirectAnchorLLM(), method="triskill_full")
+
+        self.assertIn("print(1)", artifact["final_answer"])
+        self.assertNotIn("print(0)", artifact["final_answer"])
+
+    def test_code_direct_seed_prompt_lists_visible_forbidden_terms(self):
+        prompt = (
+            "Return JSON with solve_lines.\n"
+            "Programming constraints: DO NOT use the following techniques\n"
+            "- for loop\n"
+            "- if statement\n"
+            "Problem text mentions set the variable to zero."
+        )
+        seed_prompt = _openended_seed_prompt("neocoder", prompt)
+
+        self.assertIn("Visible forbidden techniques parsed from the prompt: for loop, if statement", seed_prompt)
+        self.assertIn("avoid `for ... in ...`", seed_prompt)
+        self.assertNotIn("Visible forbidden techniques parsed from the prompt: for loop, if statement, set", seed_prompt)
+
     def test_aut_extracts_real_ideas_from_raw_reasoning(self):
         item = {"query": "List creative uses for a boot.", "item": "boot"}
         artifact = run_triskill("aut", item, llm=AUTRawIdeasLLM(), method="triskill_full")
@@ -262,6 +456,43 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn("Planter", artifact["final_answer"])
         self.assertIn("Doorstop", artifact["final_answer"])
         self.assertNotIn("use 1", artifact["final_answer"])
+
+    def test_aut_filters_workflow_meta_and_renders_portfolio(self):
+        item = {"query": "List creative uses for a belt.", "item": "belt"}
+        artifact = run_triskill("aut", item, llm=AUTMetaFallbackLLM(), method="triskill_full")
+
+        self.assertIn("waist support", artifact["final_answer"])
+        self.assertIn("garden tie", artifact["final_answer"])
+        self.assertNotIn("TriSkill pipeline", artifact["final_answer"])
+        self.assertNotIn("The prompt asks", artifact["final_answer"])
+
+    def test_aut_living_entity_filters_moral_statements_and_adds_constructive_uses(self):
+        item = {"query": "What are some creative uses for a baby?", "item": "baby"}
+        artifact = run_triskill("aut", item, llm=AUTLivingEntityLLM(), method="triskill_full")
+
+        self.assertIn("learning about baby care needs", artifact["final_answer"])
+        self.assertIn("designing safer spaces for a baby", artifact["final_answer"])
+        self.assertNotIn("Respect Life", artifact["final_answer"])
+        self.assertNotIn("fundamentally wrong", artifact["final_answer"])
+
+    def test_aut_polishes_large_label_pool_into_self_contained_uses(self):
+        item = {"query": "What are some creative uses for a box?", "item": "box"}
+        artifact = run_triskill("aut", item, llm=AUTLabelPoolLLM(), method="triskill_full")
+
+        self.assertIn("use the box as a pet bed", artifact["final_answer"])
+        self.assertIn("turn the box into a seedling tray", artifact["final_answer"])
+        self.assertNotIn('"Egg fryer"', artifact["final_answer"])
+        self.assertNotIn('"Toy organizer"', artifact["final_answer"])
+
+    def test_aut_direct_seed_ignores_schema_example_when_raw_has_ideas(self):
+        artifact = _direct_seed(
+            "aut",
+            "List creative uses for a candle.",
+            llm=AUTThinkingSchemaLLM(),
+            config={"direct_seed_samples": 1, "direct_seed_max_tokens": 128},
+        )
+
+        self.assertEqual(artifact["candidates"][0]["uses"], ["emergency light", "wax seal", "table centerpiece"])
 
     def test_dat_normalization_filters_skill_names_and_fills(self):
         output = normalize_selected("dat", {"words": ["semantic_domain_expansion", "Whale"]})
@@ -527,12 +758,161 @@ class CodeFinalizerLLM:
         return "{}"
 
 
+class CodeExampleSelectionLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "candidate_generation" in lower:
+            return '{"solve_lines":["def solve():","    n = int(input())","    print(n * 2)"]}'
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeTopLevelCallLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "candidate_generation" in lower:
+            return '{"solve_lines":["def solve():","    print(input())"]}'
+        return '{"solve_lines":["def solve():","    print(input())","solve()"]}'
+
+
+class CodeConstraintSelectionLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "execution_verification" in lower:
+            return (
+                '{"solve_lines":["def solve():","    n = int(input())","    i = 0","    total = 0",'
+                '"    while i < n:","        total += 1","        i += 1","    print(total)"]}'
+            )
+        if "candidate_generation" in lower:
+            return (
+                '{"solve_lines":["def solve():","    n = int(input())","    total = 0",'
+                '"    for _ in range(n):","        total += 1","    print(total)"]}'
+            )
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeIfConstraintSelectionLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "execution_verification" in lower:
+            return '{"solve_lines":["def solve():","    print(input())"]}'
+        if "candidate_generation" in lower:
+            return (
+                '{"solve_lines":["def solve():","    n = input()",'
+                '"    if n > 0:","        print(n)"]}'
+            )
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeMapConstraintSelectionLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "execution_verification" in lower:
+            return '{"solve_lines":["def solve():","    print(input())"]}'
+        if "candidate_generation" in lower:
+            return '{"solve_lines":["def solve():","    xs = list(map(int, input().split()))","    print(xs[0])"]}'
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeMainGuardCommentLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        return (
+            '{"solve_lines":["# forbidden comment","def solve():","    print(input())",'
+            '"if __name__ == \\"__main__\\":","    solve()"]}'
+        )
+
+
+class CodeRepairLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "repair this programming answer" in lower:
+            return '{"solve_lines":["def solve():","    n = int(input())","    print(n + 1)"]}'
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeViolatingRepairLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "repair this programming answer" in lower:
+            return (
+                '{"solve_lines":["def solve():","    n = int(input())","    total = 0",'
+                '"    for _ in range(n):","        total += 1","    print(total)"]}'
+            )
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
+class CodeConstraintRewriteLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "rewrite this programming answer" in lower:
+            return (
+                '{"solve_lines":["def solve():","    n = int(input())","    i = 0",'
+                '"    while i < n:","        i += 1","    print(i)"]}'
+            )
+        return (
+            '{"solve_lines":["def solve():","    n = int(input())","    total = 0",'
+            '"    for _ in range(n):","        total += 1","    print(total)"]}'
+        )
+
+
+class CodeDirectAnchorLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "final answer anchor" in lower:
+            return '{"solve_lines":["def solve():","    print(1)"]}'
+        return '{"solve_lines":["def solve():","    print(0)"]}'
+
+
 class AUTRawIdeasLLM:
     def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
         lower = prompt.lower()
         if "give your best direct answer first" in lower:
             return "Thinking Process:\nIdeas: Planter, Doorstop, Cable holder\n" + '{"uses":["use 1","use 2"]}'
         return "{}"
+
+
+class AUTMetaFallbackLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "create a final answer for this alternative-uses prompt" in lower:
+            return '{"uses":["waist support","garden tie","door latch","book strap","cable organizer","improvised handle","wall hanging","training aid","bag repair","game boundary","shelf support","curtain tie"]}'
+        if "candidate_generation" in lower or "coverage_balancing" in lower:
+            return '{"uses":["The prompt asks for creative uses.","Item: belt","This is my current skill in the TriSkill pipeline"]}'
+        return '{"uses":["use 1","use 2","use 3"]}'
+
+
+class AUTLivingEntityLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        return '{"uses":["The subject is a human infant requiring care.","Respect Life","The concept is fundamentally wrong."]}'
+
+
+class AUTLabelPoolLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "select and rewrite a final answer" in lower:
+            return (
+                '{"uses":["use the box as a pet bed","turn the box into a seedling tray",'
+                '"store craft tools in the box","use the box as a mail sorter",'
+                '"make the box into a puppet theater","use the box to protect fragile gifts",'
+                '"turn the box into a tabletop recycling bin","use the box as a portable first aid kit",'
+                '"make the box into a shadow display frame","use the box to organize charging cables",'
+                '"turn the box into a small compost collector","use the box as a game-piece arena"]}'
+            )
+        return (
+            '{"uses":["Pet bed","Plant pot","Storage bin","Toy organizer","Desk drawer","Egg fryer",'
+            '"Wine rack","Cookie jar","use the box as a pet bed","turn the box into a seedling tray",'
+            '"store craft tools in the box","use the box as a mail sorter","make the box into a puppet theater",'
+            '"use the box to protect fragile gifts","turn the box into a tabletop recycling bin",'
+            '"use the box as a portable first aid kit","make the box into a shadow display frame",'
+            '"use the box to organize charging cables","turn the box into a small compost collector",'
+            '"use the box as a game-piece arena","a temporary radiation shield block for low-level alpha/beta sources",'
+            '"a counterweight for a submerged hydroelectric turbine blade","Bread box","Egg warmer","Soda dispenser","Knife block",'
+            '"Fork rest","Mirror frame","Drawer insert"]}'
+        )
+
+
+class AUTThinkingSchemaLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        return 'Thinking Process:\nSchema: {"uses":["use 1","use 2","use 3"]}\nIdeas: emergency light, wax seal, table centerpiece'
 
 
 if __name__ == "__main__":
