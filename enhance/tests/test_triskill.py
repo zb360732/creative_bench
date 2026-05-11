@@ -146,6 +146,20 @@ class TriSkillTest(unittest.TestCase):
 
         self.assertIn('"target": "uk"', artifact["final_answer"])
 
+    def test_bats_does_not_read_hidden_target_words(self):
+        item = {
+            "query": "Complete analogy: madrid : spain :: paris : ?",
+            "word_a": "madrid",
+            "word_b": "spain",
+            "word_c": "paris",
+            "target_words": ["indonesia"],
+        }
+        artifact = run_triskill("bats", item, llm=BATSHiddenGoldTrapLLM(), method="triskill_full")
+
+        self.assertNotIn("target_words", artifact["safe_item"])
+        self.assertIn('"target": "france"', artifact["final_answer"])
+        self.assertNotIn("indonesia", artifact["final_answer"].lower())
+
     def test_context_fit_tasks_do_not_force_direct_seed(self):
         item = {
             "query": "Replace *approach* with one word.",
@@ -678,6 +692,19 @@ class BATSInputCopyLLM:
         if "combination_verification" in lower:
             return '{"target":"london"}'
         return '{"target":"london"}'
+
+
+class BATSHiddenGoldTrapLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        self.assert_not_available(prompt)
+        if "give your best direct answer first" in prompt.lower():
+            return '{"target":"france"}'
+        return '{"candidates":[{"target":"france"}],"best_candidate":{"target":"france"}}'
+
+    @staticmethod
+    def assert_not_available(prompt: str) -> None:
+        if "target_words" in prompt or "indonesia" in prompt.lower():
+            raise AssertionError("hidden target words leaked into the prompt")
 
 
 class MetaphorDirectLLM:

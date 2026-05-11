@@ -1234,22 +1234,22 @@ def _best_available_artifact(state: ElicitationState) -> Any:
 
 
 def _preferred_seed_candidate(state: ElicitationState) -> Any:
-    """Use direct-answer anchoring for tasks where workflow over-selection regresses.
+    """Use direct-answer anchoring for context-fit single-word tasks.
 
-    The combinational workflow still runs and records its artifacts, but BATS and
-    metaphor are high-precision single-word tasks.  Empirically, verifier steps can
-    replace a correct direct answer with a weaker paraphrase or relation guess, so
-    the direct seed is the default unless it is missing or visibly invalid.
+    The combinational workflow still runs and records its artifacts.  For
+    context-fit lexical replacement, verifier steps can replace a plausible direct
+    answer with a weaker paraphrase, so the direct seed is kept as a conservative
+    fallback unless it is missing or visibly invalid.
     """
 
-    if state.task_name not in {"bats", "metaphor"}:
+    if state.task_name != "metaphor":
         return None
     if "context_fit" in state.canonical_metrics or "metaphorical_fit" in state.canonical_metrics:
         return None
     for candidate in state.candidates:
         if not isinstance(candidate, dict) or candidate.get("source") != "direct_seed":
             continue
-        field = "target" if state.task_name == "bats" else "word"
+        field = "word"
         word = _clean_word(candidate.get(field) or candidate.get("word") or candidate.get("target"))
         if word:
             preferred = dict(candidate)

@@ -17,7 +17,7 @@ TASK_SKILL_GUIDANCE: dict[str, dict[str, str]] = {
         "candidate_recombination": "Apply the abstracted relation to C to produce candidate targets.",
         "combination_verification": "Score whether A:B and C:y instantiate the same relation, direction, entity type, and abstraction level. Prefer common direct answers.",
         "constraint_preservation": "Keep the answer as one common target word in the requested target field.",
-        "output_normalization": "Return only JSON with field word inside <answer> tags.",
+        "output_normalization": "Return only JSON with field target inside <answer> tags.",
     },
     "rat": {
         "unit_extraction": "Extract the three visible clues and their likely phrase, compound, idiom, property, prefix, or suffix affordances.",
