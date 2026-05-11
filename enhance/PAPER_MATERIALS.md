@@ -179,9 +179,14 @@ Current combinational workflow behavior:
 Current conservative design choice:
 
 ```text
-For BATS and Metaphor, direct-seed anchoring is used to avoid replacing a
-correct direct answer with a weaker workflow candidate. This protects accuracy
-but limits the maximum improvement size.
+For Metaphor, direct-seed anchoring remains conservative because context-fit
+rewrites can replace a valid direct answer with a weaker paraphrase.
+
+For BATS, final selection now uses relation-module consensus rather than direct
+seed dominance: constraint preservation, relation verification, and candidate
+recombination vote over visible candidates, while candidates that merely copy
+visible analogy inputs are rejected. This keeps the method generic to analogy
+tasks and avoids task-answer leakage.
 ```
 
 Open-ended task safeguard:

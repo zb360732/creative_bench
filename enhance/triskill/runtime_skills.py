@@ -11,6 +11,8 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 import json
+import os
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -21,6 +23,9 @@ from .llm import LLM, call_llm_json, parse_json_lenient
 from .normalizer import DEFAULT_DIVERSE_WORDS, PLACEHOLDER_WORDS, normalize_selected, normalize_text
 from .state import ElicitationState
 from .task_prompts import guidance_for
+
+
+_SEMANTIC_MODEL_CACHE: dict[str, Any] = {}
 
 
 @dataclass
@@ -76,6 +81,19 @@ Return compact JSON. Include useful fields for this skill. If you propose candid
 
 class OutputNormalizationRuntimeSkill(RuntimeSkill):
     def run(self, state: ElicitationState, llm: LLM, config: dict[str, Any]) -> ElicitationState:
+        if state.task_name == "dat":
+            words = _dat_final_words_from_state(state, llm, config)
+            if words:
+                state.final_answer = normalize_selected(state.task_name, {"words": words}, dict(state.output_schema))
+                state.parse_success = True
+                state.artifacts[self.name] = {
+                    "final_answer": state.final_answer,
+                    "parse_success": state.parse_success,
+                    "selection_policy": "semantic_diversity_greedy",
+                    "num_words": len(words),
+                }
+                return state
+
         if state.task_name == "aut":
             uses = _aut_uses_from_state(state)
             min_uses = int(config.get("aut_min_final_uses") or 0)
@@ -103,6 +121,19 @@ class OutputNormalizationRuntimeSkill(RuntimeSkill):
             state.parse_success = bool(state.final_answer)
             state.artifacts[self.name] = {"final_answer": state.final_answer, "parse_success": state.parse_success}
             return state
+
+        if state.task_name == "bats":
+            selected = _bats_relation_consensus_candidate(state)
+            if selected:
+                state.final_answer = normalize_selected(state.task_name, selected, dict(state.output_schema))
+                state.parse_success = bool(state.final_answer)
+                state.artifacts[self.name] = {
+                    "final_answer": state.final_answer,
+                    "parse_success": state.parse_success,
+                    "selection_policy": "relation_module_consensus",
+                    "selected": selected,
+                }
+                return state
 
         selected = _preferred_seed_candidate(state) or state.selected_candidate
         if selected is None:
@@ -1228,6 +1259,92 @@ def _preferred_seed_candidate(state: ElicitationState) -> Any:
     return None
 
 
+def _bats_relation_consensus_candidate(state: ElicitationState) -> dict[str, Any] | None:
+    input_words = _bats_visible_input_words(state)
+    weighted_sources = (
+        ("constraint_preservation", 3.0),
+        ("combination_verification", 2.0),
+        ("candidate_recombination", 2.0),
+        ("relation_property_abstraction", 1.0),
+        ("unit_extraction", 1.0),
+    )
+    scores: dict[str, float] = {}
+    first_seen: dict[str, int] = {}
+    source_trace: dict[str, list[str]] = {}
+
+    def add_candidate(raw: Any, weight: float, source: str) -> None:
+        target = _bats_clean_target(raw)
+        if not target:
+            return
+        if target in input_words:
+            return
+        if target not in first_seen:
+            first_seen[target] = len(first_seen)
+        scores[target] = scores.get(target, 0.0) + weight
+        source_trace.setdefault(target, []).append(source)
+
+    for key, weight in weighted_sources:
+        add_candidate(_selected_value(state.artifacts.get(key)) or state.artifacts.get(key), weight, key)
+
+    direct_seed = state.artifacts.get("direct_seed")
+    if isinstance(direct_seed, dict):
+        for candidate in direct_seed.get("candidates", []):
+            add_candidate(candidate, 1.0, "direct_seed")
+    for candidate in state.candidates:
+        source = candidate.get("source", "candidate") if isinstance(candidate, dict) else "candidate"
+        if source != "direct_seed":
+            add_candidate(candidate, 0.5, source)
+
+    if not scores:
+        return None
+    best = max(scores, key=lambda item: (scores[item], -first_seen[item]))
+    return {"target": best, "selection_policy": "relation_module_consensus", "selection_sources": source_trace.get(best, [])}
+
+
+def _bats_visible_input_words(state: ElicitationState) -> set[str]:
+    words: set[str] = set()
+    for key in ("word_a", "word_b", "word_c"):
+        value = state.raw_item.get(key)
+        cleaned = _bats_clean_target(value)
+        if cleaned:
+            words.add(cleaned)
+    if len(words) >= 3:
+        return words
+    match = re.search(
+        r"\b([A-Za-z][A-Za-z0-9_-]*)\s*:\s*([A-Za-z][A-Za-z0-9_-]*)\s*::\s*([A-Za-z][A-Za-z0-9_-]*)\s*:",
+        state.original_prompt,
+    )
+    if match:
+        words.update(_bats_clean_target(item) for item in match.groups())
+    return {word for word in words if word}
+
+
+def _bats_clean_target(value: Any) -> str:
+    raw = value
+    if isinstance(value, dict):
+        for key in ("target", "word", "answer", "best_candidate", "selected", "final_answer"):
+            if key in value:
+                raw = value[key]
+                break
+    elif isinstance(value, list):
+        raw = value[0] if value else ""
+    text = str(raw or "").strip()
+    if not text:
+        return ""
+    json_match = re.search(r"['\"](?:target|word|answer)['\"]\s*:\s*['\"]([^'\"]+)['\"]", text)
+    if json_match:
+        text = json_match.group(1).strip()
+    tokens = re.findall(r"[A-Za-z][A-Za-z0-9_-]*", text)
+    if not tokens:
+        return ""
+    lowered_tokens = [token.lower() for token in tokens if token.lower() not in PLACEHOLDER_WORDS]
+    if not lowered_tokens:
+        return ""
+    if 1 < len(lowered_tokens) <= 4 and all(token.isalpha() for token in lowered_tokens):
+        return "".join(token[0] for token in lowered_tokens)
+    return lowered_tokens[0]
+
+
 def _compact_artifacts_for_normalization(artifacts: dict[str, Any]) -> dict[str, Any]:
     compact: dict[str, Any] = {}
     for key, value in artifacts.items():
@@ -1329,6 +1446,296 @@ def _clean_word(value: Any) -> str:
 def _default_diverse_words() -> list[str]:
     return list(DEFAULT_DIVERSE_WORDS)
 
+
+def _dat_final_words_from_state(state: ElicitationState, llm: LLM, config: dict[str, Any]) -> list[str]:
+    final_count = int(config.get("final_count") or state.output_schema.get("final_count") or 10)
+    pool = _dat_word_pool_from_state(state)
+    if len(pool) < final_count:
+        pool.extend(DEFAULT_DIVERSE_WORDS)
+    selected = _render_semantic_diversity_selection(state, llm, config, pool, final_count)
+    embedding_selected = _select_embedding_spread_words(selected + pool, final_count=final_count, config=config)
+    selected = embedding_selected or _select_semantically_spread_words(selected + pool, final_count=final_count)
+    if len(selected) < final_count:
+        embedding_selected = _select_embedding_spread_words(
+            selected + pool + DEFAULT_DIVERSE_WORDS,
+            final_count=final_count,
+            config=config,
+        )
+        selected = embedding_selected or _select_semantically_spread_words(
+            selected + DEFAULT_DIVERSE_WORDS,
+            final_count=final_count,
+        )
+    return selected[:final_count]
+
+
+def _dat_word_pool_from_state(state: ElicitationState) -> list[str]:
+    preferred_keys = (
+        "diversity_filtering",
+        "constraint_preservation",
+        "unit_extraction",
+        "candidate_recombination",
+        "direct_seed",
+    )
+    pool: list[str] = []
+    for key in preferred_keys:
+        pool.extend(_extract_dat_words_from_payload(state.artifacts.get(key)))
+    for candidate in state.candidates:
+        pool.extend(_extract_dat_words_from_payload(candidate))
+    for payload in state.artifacts.values():
+        pool.extend(_extract_dat_words_from_payload(payload))
+    pool.extend(DEFAULT_DIVERSE_WORDS)
+    return _dedupe_words(pool)
+
+
+def _extract_dat_words_from_payload(payload: Any) -> list[str]:
+    words: list[str] = []
+    if payload is None:
+        return words
+    if isinstance(payload, dict):
+        if isinstance(payload.get("words"), list):
+            words.extend(_clean_word(item) for item in payload["words"])
+        for key in ("word", "target", "candidate", "answer"):
+            if key in payload:
+                words.append(_clean_word(payload[key]))
+        for key in ("selected", "best_candidate", "final_answer", "candidates", "unique_candidates", "scored_candidates"):
+            if key in payload:
+                words.extend(_extract_dat_words_from_payload(payload[key]))
+    elif isinstance(payload, list):
+        for item in payload:
+            words.extend(_extract_dat_words_from_payload(item))
+    elif isinstance(payload, str):
+        words.extend(_extract_word_list(payload))
+    return [word for word in words if word]
+
+
+def _dedupe_words(words: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for word in words:
+        cleaned = _clean_word(word)
+        if not cleaned:
+            continue
+        if not _is_dat_usable_word(cleaned):
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(cleaned)
+    return result
+
+
+def _render_semantic_diversity_selection(
+    state: ElicitationState,
+    llm: LLM,
+    config: dict[str, Any],
+    pool: list[str],
+    final_count: int,
+) -> list[str]:
+    candidates = _dedupe_words(pool)[:80]
+    if len(candidates) < final_count:
+        return []
+    prompt = f"""Select a maximally semantically diverse word set using only the visible candidate pool.
+
+Rules:
+- Return exactly {final_count} single English words.
+- Prefer ordinary concrete nouns from unrelated domains.
+- Avoid multiple words from the same semantic domain.
+- Avoid repeated roots, repeated prefixes, variants of the same concept, proper nouns, phrases, and technical near-neighbors.
+- Do not introduce hidden benchmark answers or task-specific memorized content.
+- Output compact JSON only: {{"words":["word1", "..."]}}
+
+Original prompt:
+{state.original_prompt}
+
+Candidate pool:
+{json.dumps(candidates, ensure_ascii=False)}
+"""
+    raw = llm.generate(
+        prompt=prompt,
+        temperature=float(config.get("verification_temperature", 0.0)),
+        max_tokens=int(config.get("max_final_tokens", 256)),
+    )
+    parsed = parse_json_lenient(raw)
+    if isinstance(parsed, dict) and isinstance(parsed.get("words"), list):
+        return _dedupe_words([str(item) for item in parsed["words"]])
+    return _extract_word_list(raw)
+
+
+def _is_dat_usable_word(word: str) -> bool:
+    text = str(word or "").strip()
+    if not re.fullmatch(r"[A-Za-z][A-Za-z-]{2,18}", text):
+        return False
+    lowered = text.lower()
+    if lowered in PLACEHOLDER_WORDS:
+        return False
+    if lowered.endswith(("ish", "shire")) and len(lowered) > 9:
+        return False
+    return True
+
+
+def _select_semantically_spread_words(words: list[str], final_count: int) -> list[str]:
+    pool = _dedupe_words(words)
+    if not pool:
+        return []
+    selected: list[str] = []
+    while pool and len(selected) < final_count:
+        if not selected:
+            chosen = max(pool, key=_dat_standalone_word_score)
+        else:
+            chosen = max(pool, key=lambda word: _dat_incremental_word_score(word, selected))
+        selected.append(chosen)
+        pool = [word for word in pool if word.lower() != chosen.lower()]
+    return selected
+
+
+def _select_embedding_spread_words(words: list[str], final_count: int, config: dict[str, Any]) -> list[str]:
+    """Select words by generic semantic dispersion when an embedding model is available.
+
+    This is deliberately candidate-pool only: it never introduces words outside
+    visible workflow artifacts and generic fallbacks, and it does not read
+    benchmark labels or task examples.
+    """
+
+    pool = _dedupe_words(words)
+    if len(pool) < final_count:
+        return []
+    model = _load_semantic_embedding_model(config)
+    if model is None:
+        return []
+    try:
+        import numpy as np
+
+        embeddings = model.encode(pool, show_progress_bar=False)
+        embeddings = np.asarray(embeddings, dtype="float32")
+        norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+        if embeddings.ndim != 2 or embeddings.shape[0] != len(pool):
+            return []
+        if np.any(norms <= 0):
+            return []
+        embeddings = embeddings / norms
+        similarity = np.matmul(embeddings, embeddings.T)
+        return _select_words_by_similarity(pool, similarity, final_count)
+    except Exception:
+        return []
+
+
+def _load_semantic_embedding_model(config: dict[str, Any]) -> Any | None:
+    model_name = str(
+        os.getenv("TRISKILL_SEMANTIC_MODEL")
+        or config.get("semantic_embedding_model")
+        or _local_sentence_transformer_path()
+        or "sentence-transformers/all-MiniLM-L6-v2"
+    )
+    if model_name in _SEMANTIC_MODEL_CACHE:
+        return _SEMANTIC_MODEL_CACHE[model_name]
+    try:
+        from sentence_transformers import SentenceTransformer
+
+        kwargs: dict[str, Any] = {}
+        if Path(model_name).exists():
+            kwargs["local_files_only"] = True
+        model = SentenceTransformer(model_name, **kwargs)
+        _SEMANTIC_MODEL_CACHE[model_name] = model
+        return model
+    except Exception:
+        _SEMANTIC_MODEL_CACHE[model_name] = None
+        return None
+
+
+def _local_sentence_transformer_path() -> str | None:
+    repo_root = Path(__file__).resolve().parents[2]
+    snapshots = repo_root / "evalscope/dataprocess/model/models--sentence-transformers--all-MiniLM-L6-v2/snapshots"
+    if not snapshots.exists():
+        return None
+    for candidate in sorted(snapshots.iterdir()):
+        if (candidate / "config.json").exists():
+            return str(candidate)
+    return None
+
+
+def _select_words_by_similarity(words: list[str], similarity: Any, final_count: int) -> list[str]:
+    if len(words) <= final_count:
+        return words[:final_count]
+    best_selection: list[str] = []
+    best_score = float("-inf")
+    for start_index, start_word in enumerate(words):
+        selected_indices = [start_index]
+        remaining = [idx for idx in range(len(words)) if idx != start_index]
+        while remaining and len(selected_indices) < final_count:
+            next_index = max(
+                remaining,
+                key=lambda idx: _embedding_set_score(selected_indices + [idx], similarity),
+            )
+            selected_indices.append(next_index)
+            remaining.remove(next_index)
+        score = _embedding_set_score(selected_indices, similarity)
+        if score > best_score:
+            best_score = score
+            best_selection = [words[idx] for idx in selected_indices]
+    return best_selection
+
+
+def _embedding_set_score(indices: list[int], similarity: Any) -> float:
+    if len(indices) < 2:
+        return 0.0
+    distances: list[float] = []
+    close_pair_penalty = 0.0
+    for left_pos, left_idx in enumerate(indices):
+        for right_idx in indices[left_pos + 1 :]:
+            cosine = float(similarity[left_idx][right_idx])
+            distances.append(100.0 if cosine <= 0 else 1.0 / cosine)
+            if cosine > 0.65:
+                close_pair_penalty += (cosine - 0.65) * 20.0
+    return (sum(distances) / len(distances)) - close_pair_penalty
+
+
+def _dat_standalone_word_score(word: str) -> float:
+    lowered = word.lower()
+    score = 1.0
+    if 5 <= len(lowered) <= 10:
+        score += 0.4
+    if "-" in lowered:
+        score -= 0.5
+    if lowered.endswith(("tion", "ism", "ness", "ity")):
+        score -= 0.15
+    return score
+
+
+def _dat_incremental_word_score(word: str, selected: list[str]) -> float:
+    pair_scores = [_dat_pair_separation(word, other) for other in selected]
+    min_pair = min(pair_scores) if pair_scores else 1.0
+    mean_pair = sum(pair_scores) / len(pair_scores) if pair_scores else 1.0
+    first_letter_penalty = sum(1 for other in selected if other[:1].lower() == word[:1].lower()) * 0.25
+    return min_pair * 2.0 + mean_pair + _dat_standalone_word_score(word) - first_letter_penalty
+
+
+def _dat_pair_separation(left: str, right: str) -> float:
+    a = left.lower()
+    b = right.lower()
+    score = 1.0
+    if a[:1] == b[:1]:
+        score -= 0.25
+    if len(a) >= 3 and len(b) >= 3 and a[:3] == b[:3]:
+        score -= 0.65
+    if _longest_common_prefix(a, b) >= 4:
+        score -= 0.5
+    if _longest_common_suffix(a, b) >= 4:
+        score -= 0.25
+    return max(0.0, score)
+
+
+def _longest_common_prefix(left: str, right: str) -> int:
+    count = 0
+    for a, b in zip(left, right):
+        if a != b:
+            break
+        count += 1
+    return count
+
+
+def _longest_common_suffix(left: str, right: str) -> int:
+    return _longest_common_prefix(left[::-1], right[::-1])
 
 
 def _render_aut_use_portfolio(state: ElicitationState, llm: LLM, config: dict[str, Any], existing_uses: list[str]) -> list[str]:

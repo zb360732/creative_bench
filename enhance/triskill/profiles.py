@@ -106,14 +106,14 @@ TASK_PROFILE_CONFIGS: dict[str, dict[str, Any]] = {
         "canonical_metric_weights": {"semantic_diversity": "high", "lexical_validity": "medium", "format_validity": "high"},
         "output_schema_spec": {"type": "json", "required_fields": ["words"], "final_count": 10},
         "skills": ["unit_extraction", "candidate_recombination", "diversity_filtering", "constraint_preservation", "output_normalization"],
-        "budgets": {"candidate_count": 50, "final_count": 10, "generation_temperature": 0.9, "verification_temperature": 0.0},
+        "budgets": {"candidate_count": 50, "final_count": 10, "generation_temperature": 0.9, "verification_temperature": 0.0, "direct_seed_samples": 3, "direct_seed_temperature_spread": [0.7, 0.9, 1.0]},
     },
     "bats": {
         "raw_metrics": ["bats_accuracy"],
         "canonical_metric_weights": {"relation_validity": "high", "lexical_validity": "high", "format_validity": "high"},
         "output_schema_spec": {"type": "json", "required_fields": ["target"]},
         "skills": ["unit_extraction", "relation_property_abstraction", "candidate_recombination", "combination_verification", "constraint_preservation", "output_normalization"],
-        "budgets": {"relation_hypotheses": 3, "candidates_per_relation": 3, "generation_temperature": 0.6, "verification_temperature": 0.0, "direct_seed_max_tokens": 1024, "direct_seed_samples": 1},
+        "budgets": {"relation_hypotheses": 3, "candidates_per_relation": 3, "generation_temperature": 0.6, "verification_temperature": 0.0, "direct_seed_max_tokens": 1024, "direct_seed_samples": 3, "direct_seed_temperature_spread": [0.0, 0.2, 0.4]},
     },
     "rat": {
         "raw_metrics": ["rat_accuracy"],

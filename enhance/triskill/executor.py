@@ -369,6 +369,16 @@ def _direct_seed_prompt(prompt: str, schema: str, sample_index: int, sample_coun
             "\nFor use-list prompts, produce a large portfolio of concise, feasible, diverse uses. "
             "Do not stop at the three schema examples; include as many distinct useful ideas as you can fit."
         )
+    elif '"words"' in schema:
+        portfolio_note = (
+            "\nFor word-list semantic-diversity prompts, choose exactly one ordinary single word from each of many unrelated domains. "
+            "Avoid repeated prefixes, repeated roots, named variants of the same concept, and multiple words from astronomy/science/animals/places/etc."
+        )
+    elif '"target"' in schema:
+        portfolio_note = (
+            "\nFor analogy prompts, solve the relation before naming the target. Preserve direction, part of speech, number, and lexical form. "
+            "Prefer the conventional dictionary word that directly completes the analogy, not a broader category or near synonym."
+        )
     return f"""{prompt}
 
 Give your best direct answer first. Return compact JSON only, using this schema:

@@ -13,7 +13,7 @@ from triskill.executor import _direct_seed, _openended_seed_prompt, run_triskill
 from triskill.llm import OpenAICompatibleLLM, parse_json_lenient
 from triskill.paper_pipeline import audit_artifacts, create_experiment_manifest, join_scores, write_scored_summary
 from triskill.runner import run_dataset
-from triskill.runtime_skills import _extract_forbidden_code_terms
+from triskill.runtime_skills import _extract_forbidden_code_terms, _select_semantically_spread_words, _select_words_by_similarity
 from triskill.state import ElicitationState
 
 
@@ -129,11 +129,22 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn('"word": "cheese"', artifact["final_answer"])
         self.assertNotIn("thinking step by step", artifact["final_answer"])
 
-    def test_bats_prefers_direct_seed_over_weaker_verifier(self):
-        item = {"query": "Complete analogy: berlin : germany :: conakry : ?", "target_words": ["guinea"]}
+    def test_bats_uses_relation_module_consensus_for_final_target(self):
+        item = {"query": "Complete analogy: berlin : germany :: jakarta : ?", "target_words": ["indonesia"]}
         artifact = run_triskill("bats", item, llm=VerifierOverwritesLLM(), method="triskill_full")
 
-        self.assertIn('"target": "guinea"', artifact["final_answer"])
+        self.assertIn('"target": "indonesia"', artifact["final_answer"])
+
+    def test_bats_consensus_rejects_copying_visible_input_word(self):
+        item = {
+            "query": "Complete analogy: conakry : guinea :: london : ?",
+            "word_a": "conakry",
+            "word_b": "guinea",
+            "word_c": "london",
+        }
+        artifact = run_triskill("bats", item, llm=BATSInputCopyLLM(), method="triskill_full")
+
+        self.assertIn('"target": "uk"', artifact["final_answer"])
 
     def test_context_fit_tasks_do_not_force_direct_seed(self):
         item = {
@@ -501,6 +512,44 @@ class TriSkillTest(unittest.TestCase):
         self.assertIn('"Whale"', output)
         self.assertIn('"nebula"', output)
 
+    def test_semantic_spread_selector_avoids_root_cluster(self):
+        words = [
+            "quantum",
+            "quasar",
+            "quintessence",
+            "quagmire",
+            "quorum",
+            "apple",
+            "trumpet",
+            "covenant",
+            "stratus",
+            "laughter",
+        ]
+
+        selected = _select_semantically_spread_words(words, final_count=6)
+
+        q_words = [word for word in selected if word.lower().startswith("qu")]
+        self.assertLessEqual(len(q_words), 1)
+        self.assertIn("apple", selected)
+        self.assertIn("trumpet", selected)
+
+    def test_embedding_spread_selector_uses_pairwise_semantic_distance(self):
+        words = ["quasar", "nebula", "cucumber", "invoice", "violin"]
+        similarity = [
+            [1.0, 0.90, 0.10, 0.10, 0.10],
+            [0.90, 1.0, 0.10, 0.10, 0.10],
+            [0.10, 0.10, 1.0, 0.20, 0.20],
+            [0.10, 0.10, 0.20, 1.0, 0.20],
+            [0.10, 0.10, 0.20, 0.20, 1.0],
+        ]
+
+        selected = _select_words_by_similarity(words, similarity, final_count=4)
+
+        self.assertEqual(len(selected), 4)
+        self.assertFalse({"quasar", "nebula"}.issubset(set(selected)))
+        self.assertIn("cucumber", selected)
+        self.assertIn("invoice", selected)
+
     def test_openai_client_has_retries(self):
         client = OpenAICompatibleLLM(api_url="https://example.invalid/v1", model="m", retries=3, retry_interval=0)
 
@@ -617,6 +666,18 @@ class VerifierOverwritesLLM:
         if "combination_verification" in lower or "constraint_preservation" in lower:
             return '{"best_candidate":{"target":"indonesia","score":1}}'
         return '{"candidates":[{"target":"indonesia"}],"best_candidate":{"target":"indonesia"}}'
+
+
+class BATSInputCopyLLM:
+    def generate(self, prompt: str, temperature: float = 0.0, max_tokens: int = 1024) -> str:
+        lower = prompt.lower()
+        if "give your best direct answer first" in lower:
+            return '{"target":"london"}'
+        if "candidate_recombination" in lower or "constraint_preservation" in lower:
+            return '{"target":"uk"}'
+        if "combination_verification" in lower:
+            return '{"target":"london"}'
+        return '{"target":"london"}'
 
 
 class MetaphorDirectLLM:
